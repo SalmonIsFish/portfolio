@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Adib</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav>
+    <span class="logo">Adib</span>
+    <div class="nav-links">
+        <a href="#about">About</a>
+        <span style="color: rgb(255, 255, 255)">•</span>
+        <a href="#activities">Activities</a>
+        <span style="color: rgb(255, 255, 255)">•</span>
+        <a href="#projects">Projects</a>
+        <span style="color: rgb(255, 255, 255)">•</span>
+        <a href="#contact">Contact</a>
+  </div>
+</nav>
+    <canvas id="particles"></canvas>
+    <main>
+        <h1>HI, I'm Adib 🚀&#xFE0E;</h1>
+        <p>CyberSecurity student. <span id="typewriter"></span></p>
+        <div class ="links">
+                <a href="https://github.com/SalmonIsFish" target="_blank"><i class="fab fa-github"></i> GitHub</a>
+                <a href="https://www.linkedin.com/in/adib-luqman-b63683273/" target="_blank"><i class="fab fa-linkedin"></i> LinkedIn</a>
+            </div>
+            <a href="#contact" class="contact-hint">or send me a message →</a>
+             <div class="scroll-hint">scroll down</div>
+        </main>
+        <section id="about">
+             <h2>About Me 👨‍💻</h2>
+             <p>
+                I'm a CyberSecurity student based in Malaysia, passionate about 
+                keeping the internet safe. When I'm not studying, I'm building 
+                stuff and breaking things (legally 😄).
+  </p>
+</section>
+<section id="activities">
+  <h2>Activities & Events 🎤</h2>
+  <div class="activity-grid">
+
+    <div class="activity-card">
+      <div class="activity-emoji">🗂️</div>
+      <h3>Event Name</h3>
+      <p>Role — e.g. Organizer, Committee Member</p>
+      <span class="activity-date">Month Year</span>
+    </div>
+
+    <div class="activity-card">
+      <div class="activity-emoji">🎟️</div>
+      <h3>Event Name</h3>
+      <p>Role — e.g. Participant, Attendee</p>
+      <span class="activity-date">Month Year</span>
+    </div>
+
+  </div>
+</section>
+<section id="projects">
+  <h2>Projects 🛠️</h2>
+  <div class="project-grid">
+
+    <div class="project-card">
+      <div class="project-emoji">🔐</div>
+      <h3>Project Name</h3>
+      <p>Short description of what this project does and what you learned from it.</p>
+      <div class="project-tags">
+        <span>Python</span>
+        <span>Security</span>
+      </div>
+      <a href="#" target="_blank">View Project →</a>
+    </div>
+
+    <div class="project-card">
+      <div class="project-emoji">🌐</div>
+      <h3>This Portfolio</h3>
+      <p>Personal portfolio built from scratch with HTML, CSS and JavaScript.</p>
+      <div class="project-tags">
+        <span>HTML</span>
+        <span>CSS</span>
+        <span>JavaScript</span>
+      </div>
+      <a href="https://github.com/SalmonIsFish" target="_blank">View Project →</a>
+    </div>
+
+  </div>
+</section>
+<section id="contact">
+  <h2>Contact Me 📡</h2>
+  <p>Want to get in touch?</p>
+  <button id="contact-btn">Let's Connect</button>
+
+  <div id="contact-reveal" class="contact-reveal hidden">
+    <p>📧 Email me at:</p>
+    <a href="mailto:adibluqman117@gmail.com" class="contact-email">adibluqman117@gmail.com</a>
+  </div>
+</section>
+
+<div id="game-modal" class="modal hidden">
+  <div class="modal-box">
+    <h2>Wanna play a game? 👾</h2>
+    <p>Score 20 points to unlock my contact info!</p>
+    <div class="modal-buttons">
+      <button id="play-btn">Yes, let's go! 🚀</button>
+      <button id="skip-btn">No thanks, just give me the info</button>
+    </div>
+  </div>
+</div>
+
+<div id="game-container" class="hidden">
+  <div id="game-score">Score: <span id="score-value">0</span> / 20</div>
+  <div id="game-instructions">Move: WASD or Arrows 🕹️ &nbsp; | &nbsp; Shoot: Spacebar 🔫</div>
+  <canvas id="game-canvas"></canvas>
+  <button id="close-game">✕</button>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
