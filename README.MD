@@ -24,4 +24,4 @@ If you want to view the code locally, no complex build tools or package managers
 
 1. Clone this repository:
    ```bash
-   git clone [https://github.com/SalmonIsFish/portfolio.git](https://github.com/SalmonIsFish/portfolio.git)
+   git clone [https://github.com/SalmonIsFish/portfolio.git](https://github.com/SalmonIsFish/portfolio.git)    
