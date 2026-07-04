@@ -1,6 +1,6 @@
 # Adib's Personal Portfolio 🚀
 
-Welcome to the source code for my personal portfolio website. I am a Cybersecurity student at Universiti Tenaga Nasional (UNITEN) in Malaysia, passionate about keeping the internet safe, building stuff, and breaking things (legally 😄). 
+Welcome to the source code for my personal portfolio website. I am a Cybersecurity student , passionate about keeping the internet safe, building stuff, and breaking things (legally 😄). 
 
 This repository serves as a showcase of my front-end development skills, campus initiatives, and technical projects.
 
