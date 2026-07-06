@@ -5,7 +5,7 @@ Welcome to the source code for my personal portfolio website. I am a Cybersecuri
 This repository serves as a showcase of my front-end development skills, campus initiatives, and technical projects.
 
 ## 🌐 Live Preview
-Check out the live website here: [https://salmonisfish.github.io/portfolio/]
+Check out the live website here: [https://salmonisfish.github.io/portfolio/)
 
 ## 🛠️ Tech Stack
 This project was built from scratch without any heavy frameworks to practice core web development fundamentals:
