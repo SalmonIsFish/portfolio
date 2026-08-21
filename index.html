@@ -3,167 +3,345 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Adib</title>
+  <title>Adib — CyberSecurity Student</title>
+  <meta name="description" content="Adib Luqman — CyberSecurity student, CTF player, and builder. Based in Malaysia.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;800;900&family=JetBrains+Mono:wght@400;500;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <nav>
+  <nav id="navbar">
     <span class="logo">Adib</span>
-    <div class="nav-links">
-        <a href="#about">About</a>
-        <span style="color: rgb(255, 255, 255)">•</span>
-        <a href="#activities">Activities</a>
-        <span style="color: rgb(255, 255, 255)">•</span>
-        <a href="#projects">Projects</a>
-        <span style="color: rgb(255, 255, 255)">•</span>
-        <a href="#contact">Contact</a>
-  </div>
-</nav>
-    <canvas id="particles"></canvas>
-    <main>
-        <h1>HI, I'm Adib 🚀&#xFE0E;</h1>
-        <p>CyberSecurity student. <span id="typewriter"></span></p>
-        <div class ="links">
-                <a href="https://github.com/SalmonIsFish" target="_blank"><i class="fab fa-github"></i> GitHub</a>
-                <a href="https://www.linkedin.com/in/adib-luqman-b63683273/" target="_blank"><i class="fab fa-linkedin"></i> LinkedIn</a>
+    <div class="nav-links" id="navLinks">
+      <a href="#about">About</a>
+      <a href="#activities">Activities</a>
+      <a href="#hackathons">Hackathons</a>
+      <a href="#projects">Projects</a>
+      <a href="#contact">Contact</a>
+    </div>
+    <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+  </nav>
+
+  <canvas id="particles"></canvas>
+
+  <!-- HERO -->
+  <section class="hero" id="hero">
+    <div class="hero-grid">
+      <div class="hero-text">
+        <span class="hero-greeting">Hello, I'm</span>
+        <h1 class="hero-name">Adib Luqman</h1>
+        <p class="hero-title">CyberSecurity student. <span class="typewriter-text" id="typewriter"></span><span class="typewriter-cursor">|</span></p>
+        <p class="hero-bio">I study how things break so I can help make them stronger. Passionate about CTF, pentesting, and building tools that matter.</p>
+        <div class="hero-buttons">
+          <a href="#contact" class="btn btn-primary">Get In Touch</a>
+          <a href="#projects" class="btn btn-ghost">View Projects</a>
+        </div>
+        <div class="hero-social">
+          <a href="https://github.com/SalmonIsFish" class="social-link" target="_blank"><i class="fab fa-github"></i></a>
+          <a href="https://www.linkedin.com/in/adib-luqman-b63683273/" class="social-link" target="_blank"><i class="fab fa-linkedin"></i></a>
+        </div>
+      </div>
+      <div class="hero-terminal">
+        <div class="terminal-window">
+          <div class="terminal-header">
+            <div class="terminal-dots">
+              <span class="dot dot-red"></span>
+              <span class="dot dot-yellow"></span>
+              <span class="dot dot-green"></span>
             </div>
-            <a href="#contact" class="contact-hint">or send me a message →</a>
-             <div class="scroll-hint">scroll down</div>
-        </main>
-        <section id="about">
-             <h2>About Me 👨‍💻</h2>
-             <p>
-                I'm a CyberSecurity student based in Malaysia, passionate about 
-                keeping the internet safe. When I'm not studying, I'm building 
-                stuff and breaking things (legally 😄).
-  </p>
-</section>
-<section id="activities">
-  <h2>Activities & Events 🎤</h2>
-  <div class="activity-grid">
-
-  <div class="activity-card">
-  <a href="https://www.linkedin.com/feed/update/urn:li:activity:7454415743540047872/" target="_blank" class="activity-img-wrapper">
-    <img src="setel-event.jpeg" alt="Presenting at Setel industrial visit" class="activity-img">
-    <div class="activity-overlay">
-      <i class="fab fa-linkedin"></i>
-      <span>View LinkedIn Post</span>
-    </div>
-  </a>
-  <h3>Setel Industrial Visit</h3>
-  <p>Program Director — Organized this visit for CLICQ IT Society UNITEN after reaching out to Setel directly via Instagram DM.</p>
-  <span class="activity-date">April 2026</span>
-</div>
-
-<div class="activity-card">
-      <a href="https://www.linkedin.com/feed/update/urn:li:activity:7478730543300452352/" target="_blank" class="activity-img-wrapper">
-        <img src="aqufish-talk.png" alt="AquFish Technology Startup Talk at UNITEN" class="activity-img">
-        <div class="activity-overlay">
-          <i class="fab fa-linkedin"></i>
-          <span>View LinkedIn Post</span>
+            <span class="terminal-title">whoami.sh</span>
+          </div>
+          <div class="terminal-body" id="terminalBody"></div>
         </div>
-      </a>
-      <h3>AquFish Tech Startup Talk</h3>
-      <p>Organizer — Hosted an interactive session at UNITEN with the CEO of AquFish Technology to discuss agrotech innovations and startup management.</p>
-      <span class="activity-date">June 2026</span>
+      </div>
     </div>
+    <div class="scroll-hint">
+      scroll down
+      <span class="scroll-hint-line"></span>
+      <span class="scroll-hint-arrow">&#9662;</span>
+    </div>
+  </section>
 
+  <!-- STATS BAR -->
+  <div class="stats-bar">
+    <div class="container stats-grid">
+      <div class="fade-in-element">
+        <div class="stat-number">29</div>
+        <div class="stat-label">CTF Flags</div>
+      </div>
+      <div class="fade-in-element">
+        <div class="stat-number">3</div>
+        <div class="stat-label">Hackathons</div>
+      </div>
+      <div class="fade-in-element">
+        <div class="stat-number">3</div>
+        <div class="stat-label">Events Organized</div>
+      </div>
+      <div class="fade-in-element">
+        <div class="stat-number">3+</div>
+        <div class="stat-label">Projects</div>
+      </div>
+    </div>
   </div>
-</section>
-<section id="projects">
-  <h2>Projects 🛠️</h2>
- <div class="project-card">
-      
-      <a href="https://github.com/SalmonIsFish/owasp-ctf-academy" target="_blank" class="activity-img-wrapper">
-        <img src="owasp-ctf.jpeg" alt="OWASP CTF ACADEMY Project" class="project-img">
-        <div class="activity-overlay">
-          <i class="fab fa-github"></i>
-          <span>View Source Code</span>
+
+  <!-- ABOUT -->
+  <section id="about">
+    <div class="section-header fade-in-element">
+      <span class="section-tag">// about_me</span>
+      <h2 class="section-title">About Me</h2>
+    </div>
+    <p class="fade-in-element">
+      I'm a CyberSecurity student based in Malaysia, passionate about 
+      keeping the internet safe. When I'm not studying, I'm building 
+      stuff and breaking things (legally).
+    </p>
+  </section>
+
+  <div class="section-divider"><span></span></div>
+
+  <!-- ACTIVITIES -->
+  <section id="activities">
+    <div class="section-header fade-in-element">
+      <span class="section-tag">// activities</span>
+      <h2 class="section-title">Activities & Events</h2>
+    </div>
+    <div class="activity-grid">
+      <div class="activity-card fade-in-element">
+        <div class="activity-img-wrapper lightbox-trigger" data-group="activities" data-caption="Setel Industrial Visit">
+          <img src="setel-event.jpeg" alt="Setel Industrial Visit" class="activity-img">
+          <div class="activity-overlay">
+            <i class="fas fa-expand"></i>
+            <span>View Photo</span>
+          </div>
         </div>
-      </a>
-      
-      <h3>OWASP CTF ACADEMY</h3>
-      <p>A gamified, hands-on platform for learning the OWASP Top 10 (2025) vulnerability classes by exploiting them yourself, then capturing a flag to prove it.</p>
-      
-      <div class="project-tags">
-        <span>Python</span>
-        <span>HTML</span>
-        <span>CSS</span>
+        <h3>Setel Industrial Visit</h3>
+        <p>Program Director — Organized this visit for CLICQ IT Society UNITEN after reaching out to Setel directly via Instagram DM.</p>
+        <span class="activity-date">April 2026</span>
+        <a href="https://www.linkedin.com/feed/update/urn:li:activity:7366636456304306176/" target="_blank" class="activity-link"><i class="fab fa-linkedin"></i> View LinkedIn Post &#8594;</a>
       </div>
-      
-      <a href="https://github.com/SalmonIsFish/owasp-ctf-academy" target="_blank">View Project →</a>
-      
-    </div> ```
-  
- <div class="project-card">
-      
-      <a href="https://github.com/SalmonIsFish/wte-platform" target="_blank" class="activity-img-wrapper">
-        <img src="proC-hackahton.jpeg" alt="WTE Platform Project" class="project-img">
-        <div class="activity-overlay">
-          <i class="fab fa-github"></i>
-          <span>View Source Code</span>
+
+      <div class="activity-card fade-in-element">
+        <div class="activity-img-wrapper lightbox-trigger" data-group="activities" data-caption="AquFish Tech Startup Talk">
+          <img src="aqufish-talk.png" alt="AquFish Technology Startup Talk at UNITEN" class="activity-img">
+          <div class="activity-overlay">
+            <i class="fas fa-expand"></i>
+            <span>View Photo</span>
+          </div>
         </div>
-      </a>
-      
-      <h3>WTE Platform</h3>
-      <p>Ai-powered decision-support dashboard for Waste-to-Energy plant operations. Built for PromptQuest Hackathon (Category: Sustainability)</p>
-      
-      <div class="project-tags">
-        <span>Python</span>
-        <span>HTML</span>
-        <span>CSS</span>
-        <span>JavaScript</span>
+        <h3>AquFish Tech Startup Talk</h3>
+        <p>Organizer — Hosted an interactive session at UNITEN with the CEO of AquFish Technology to discuss agrotech innovations and startup management.</p>
+        <span class="activity-date">June 2026</span>
+        <a href="https://www.linkedin.com/feed/update/urn:li:activity:7478730543300452352/" target="_blank" class="activity-link"><i class="fab fa-linkedin"></i> View LinkedIn Post &#8594;</a>
       </div>
-      
-      <a href="https://github.com/SalmonIsFish/wte-platform" target="_blank">View Project →</a>
-      
-    </div> ```
 
-
-    <div class="project-card">
-      <div class="project-emoji">🌐</div>
-      <h3>This Portfolio</h3>
-      <p>Personal portfolio built from scratch with HTML, CSS and JavaScript.</p>
-      <div class="project-tags">
-        <span>HTML</span>
-        <span>CSS</span>
-        <span>JavaScript</span>
+      <div class="activity-card fade-in-element">
+        <div class="bursa-scroll">
+          <img src="Bursa1.JPG" alt="Bursa Malaysia industrial visit" class="activity-img lightbox-trigger" data-group="bursa" data-caption="Bursa Malaysia Visit">
+          <img src="Bursa2.JPG" alt="Bursa Malaysia visit group photo" class="activity-img lightbox-trigger" data-group="bursa" data-caption="Bursa Malaysia Group Photo">
+        </div>
+        <h3>Bursa Malaysia Visit</h3>
+        <p>Program Director — Led a team of students on an industrial visit to Bursa Malaysia, guiding them through the experience and ensuring a productive and engaging session.</p>
+        <span class="activity-date">July 2026</span>
       </div>
-      <a href="https://github.com/SalmonIsFish" target="_blank">View Project →</a>
     </div>
+  </section>
 
-  </div>
-</section>
-<section id="contact">
-  <h2>Contact Me 📡</h2>
-  <p>Want to get in touch?</p>
-  <button id="contact-btn">Let's Connect</button>
+  <div class="section-divider"><span></span></div>
 
-  <div id="contact-reveal" class="contact-reveal hidden">
-    <p>📧 Email me at:</p>
-    <a href="mailto:adibluqman117@gmail.com" class="contact-email">adibluqman117@gmail.com</a>
-  </div>
-</section>
+  <!-- HACKATHONS -->
+  <section id="hackathons">
+    <div class="section-header fade-in-element">
+      <span class="section-tag">// hackathons</span>
+      <h2 class="section-title">Hackathons & Competitions</h2>
+    </div>
+    <div class="hackathon-grid">
+      <div class="hackathon-card fade-in-element">
+        <div class="activity-img-wrapper lightbox-trigger" data-group="hackathons" data-caption="Supervity Hackathon — 1st Runner Up">
+          <img src="SupervityHackhaton.jpg" alt="Supervity Hackathon Project" class="project-img">
+          <div class="activity-overlay">
+            <i class="fas fa-expand"></i>
+            <span>View Photo</span>
+          </div>
+        </div>
+        <div class="hackathon-header">
+          <span class="hackathon-icon">&#129302;</span>
+          <div>
+            <h3>Supervity Hackathon</h3>
+            <span class="hackathon-team">Team Gamabunta</span>
+          </div>
+        </div>
+        <p>An AI-powered command center for automating business processes with multi-agent orchestration. Built with FastAPI, Next.js, PostgreSQL, and Docker — featuring real-time dashboards, AI policy evaluation, and human-in-the-loop exception handling.</p>
+        <div class="project-tags">
+          <span>Python</span>
+          <span>FastAPI</span>
+          <span>Next.js</span>
+          <span>PostgreSQL</span>
+          <span>Docker</span>
+        </div>
+        <a href="https://github.com/SalmonIsFish/Gamabunta_SupervityHackhaton" target="_blank"><i class="fab fa-github"></i> View Source Code &#8594;</a>
+      </div>
 
-<div id="game-modal" class="modal hidden">
-  <div class="modal-box">
-    <h2>Wanna play a game? 👾</h2>
-    <p>Score 20 points to unlock my contact info!</p>
-    <div class="modal-buttons">
-      <button id="play-btn">Yes, let's go! 🚀</button>
-      <button id="skip-btn">No thanks, just give me the info</button>
+      <div class="hackathon-card fade-in-element">
+        <div class="activity-img-wrapper lightbox-trigger" data-group="hackathons" data-caption="UCSI Hackathon — CTF Agent">
+          <img src="UCSI_Hackhaton.jpg" alt="UCSI Hackathon Project" class="project-img">
+          <div class="activity-overlay">
+            <i class="fas fa-expand"></i>
+            <span>View Photo</span>
+          </div>
+        </div>
+        <div class="hackathon-header">
+          <span class="hackathon-icon">&#127988;&#8205;&#127752;</span>
+          <div>
+            <h3>UCSI Hackathon</h3>
+            <span class="hackathon-team">Team Gamabunta</span>
+          </div>
+        </div>
+        <p>An autonomous CTF-solving agent built on LangGraph — combining LLM reasoning with a bounded tool-use loop, 14 vetted technique packs, and a Next.js dashboard. Captured 29 real flags across picoCTF, HackTheBox, and live competition challenges.</p>
+        <div class="project-tags">
+          <span>Python</span>
+          <span>LangGraph</span>
+          <span>Next.js</span>
+          <span>LLM</span>
+          <span>FastAPI</span>
+        </div>
+        <a href="https://github.com/SalmonIsFish/CTF_Hackhaton" target="_blank"><i class="fab fa-github"></i> View Source Code &#8594;</a>
+      </div>
+
+      <div class="hackathon-card fade-in-element">
+        <div class="activity-img-wrapper lightbox-trigger" data-group="hackathons" data-caption="PromptQuest Hackathon — Sustainability Track">
+          <img src="proC-hackahton.jpeg" alt="PromptQuest Hackathon Project" class="project-img">
+          <div class="activity-overlay">
+            <i class="fas fa-expand"></i>
+            <span>View Photo</span>
+          </div>
+        </div>
+        <div class="hackathon-header">
+          <span class="hackathon-icon">&#9851;&#65039;</span>
+          <div>
+            <h3>PromptQuest Hackathon</h3>
+            <span class="hackathon-team">Sustainability Track</span>
+          </div>
+        </div>
+        <p>An AI-powered decision-support dashboard for Waste-to-Energy plant operations, built for the PromptQuest Hackathon under the Sustainability category.</p>
+        <div class="project-tags">
+          <span>Python</span>
+          <span>HTML</span>
+          <span>CSS</span>
+          <span>JavaScript</span>
+        </div>
+        <a href="https://github.com/SalmonIsFish/wte-platform" target="_blank"><i class="fab fa-github"></i> View Source Code &#8594;</a>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider"><span></span></div>
+
+  <!-- PROJECTS -->
+  <section id="projects">
+    <div class="section-header fade-in-element">
+      <span class="section-tag">// projects</span>
+      <h2 class="section-title">Projects</h2>
+    </div>
+    <div class="project-grid">
+      <div class="project-card fade-in-element">
+        <div class="activity-img-wrapper lightbox-trigger" data-group="projects" data-caption="OWASP CTF Academy">
+          <img src="owasp-ctf.jpeg" alt="OWASP CTF ACADEMY Project" class="project-img">
+          <div class="activity-overlay">
+            <i class="fas fa-expand"></i>
+            <span>View Photo</span>
+          </div>
+        </div>
+        <h3>OWASP CTF ACADEMY</h3>
+        <p>A gamified, hands-on platform for learning the OWASP Top 10 (2025) vulnerability classes by exploiting them yourself, then capturing a flag to prove it.</p>
+        <div class="project-tags">
+          <span>Python</span>
+          <span>HTML</span>
+          <span>CSS</span>
+        </div>
+        <a href="https://github.com/SalmonIsFish/owasp-ctf-academy" target="_blank"><i class="fab fa-github"></i> View Source Code &#8594;</a>
+      </div>
+
+      <div class="project-card fade-in-element">
+        <div class="project-emoji">&#127760;</div>
+        <h3>This Portfolio</h3>
+        <p>Personal portfolio built from scratch with HTML, CSS and JavaScript.</p>
+        <div class="project-tags">
+          <span>HTML</span>
+          <span>CSS</span>
+          <span>JavaScript</span>
+        </div>
+        <a href="https://github.com/SalmonIsFish" target="_blank">View Project &#8594;</a>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider"><span></span></div>
+
+  <!-- CONTACT -->
+  <section id="contact">
+    <div class="section-header fade-in-element">
+      <span class="section-tag">// contact</span>
+      <h2 class="section-title">Contact Me</h2>
+    </div>
+    <p class="fade-in-element">Want to get in touch?</p>
+    <button id="contact-btn" class="btn btn-primary fade-in-element">Let's Connect</button>
+
+    <div id="contact-reveal" class="contact-reveal hidden">
+      <p>Email me at:</p>
+      <a href="mailto:adibluqman117@gmail.com" class="contact-email">adibluqman117@gmail.com</a>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="container footer-inner">
+      <p class="footer-copy">&copy; 2026 Adib Luqman. Built with curiosity.</p>
+      <div class="footer-links">
+        <a href="https://github.com/SalmonIsFish" target="_blank"><i class="fab fa-github"></i></a>
+        <a href="https://www.linkedin.com/in/adib-luqman-b63683273/" target="_blank"><i class="fab fa-linkedin"></i></a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- GAME MODAL -->
+  <div id="game-modal" class="modal hidden">
+    <div class="modal-box">
+      <h2>Wanna play a game?</h2>
+      <p>Score 20 points to unlock my contact info!</p>
+      <div class="modal-buttons">
+        <button id="play-btn">Yes, let's go!</button>
+        <button id="skip-btn">No thanks, just give me the info</button>
+      </div>
     </div>
   </div>
-</div>
 
-<div id="game-container" class="hidden">
-  <div id="game-score">Score: <span id="score-value">0</span> / 20</div>
-  <div id="game-instructions">Move: WASD or Arrows 🕹️ &nbsp; | &nbsp; Shoot: Spacebar 🔫</div>
-  <canvas id="game-canvas"></canvas>
-  <button id="close-game">✕</button>
-</div>
+  <!-- GAME CONTAINER -->
+  <div id="game-container" class="hidden">
+    <div id="game-score">Score: <span id="score-value">0</span> / 20</div>
+    <div id="game-instructions">Move: WASD or Arrows | Shoot: Spacebar</div>
+    <canvas id="game-canvas"></canvas>
+    <button id="close-game">&#10005;</button>
+  </div>
 
-<script src="script.js"></script>
+  <!-- Lightbox -->
+  <div class="lightbox" id="lightbox">
+    <button class="lightbox-close" id="lightbox-close">&times;</button>
+    <button class="lightbox-prev" id="lightbox-prev">&#10094;</button>
+    <button class="lightbox-next" id="lightbox-next">&#10095;</button>
+    <div class="lightbox-content">
+      <img class="lightbox-img" id="lightbox-img" src="" alt="">
+    </div>
+    <div class="lightbox-caption" id="lightbox-caption"></div>
+    <div class="lightbox-thumbs" id="lightbox-thumbs"></div>
+    <div class="lightbox-counter" id="lightbox-counter"></div>
+  </div>
+
+  <script src="script.js"></script>
 </body>
 </html>
