@@ -88,7 +88,7 @@ const terminalBody = document.getElementById("terminalBody");
 
 function typeTerminal() {
   terminalLines.forEach((line, i) => {
-    const delay = i * 700;
+    const delay = i * 1200;
 
     setTimeout(() => {
       const lineEl = document.createElement("div");
@@ -104,7 +104,7 @@ function typeTerminal() {
         outputEl.innerHTML = `<span class="terminal-output">${line.output}</span>`;
         terminalBody.appendChild(outputEl);
         requestAnimationFrame(() => outputEl.classList.add("show"));
-      }, 300);
+      }, 500);
     }, delay);
   });
 }
