@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>404 — Page Not Found</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <style>
+    :root {
+      --bg: #0a0c10;
+      --accent: #a78bfa;
+      --accent-2: #60a5fa;
+      --text: #e2e8f0;
+      --text-2: #8892a4;
+      --border: #1e2a3a;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font-mono);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .terminal-window {
+      width: 100%;
+      max-width: 520px;
+      background: #161b24;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4), 0 0 40px rgba(167, 139, 250, 0.05);
+    }
+    .terminal-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 18px;
+      background: #1c2333;
+      border-bottom: 1px solid var(--border);
+    }
+    .terminal-dots { display: flex; gap: 7px; }
+    .dot { width: 11px; height: 11px; border-radius: 50%; }
+    .dot-red { background: #ff5f57; }
+    .dot-yellow { background: #febc2e; }
+    .dot-green { background: #28c840; }
+    .terminal-title { font-size: 0.75rem; color: var(--text-2); }
+    .terminal-body { padding: 24px; font-size: 0.85rem; line-height: 2; }
+    .prompt { color: var(--accent); }
+    .error-out { color: var(--text-2); }
+    .hint-out { color: #fbbf24; }
+    .cursor { color: var(--accent); animation: blink 0.7s infinite; }
+    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 16px;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      font-weight: 500;
+      text-decoration: none;
+      background: var(--accent);
+      color: #000;
+      transition: all 0.2s ease;
+    }
+    .btn:hover { background: #fff; color: #000; transform: translateY(-2px); }
+    @media (prefers-reduced-motion: reduce) {
+      .cursor { animation: none; }
+      .btn:hover { transform: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="terminal-window">
+    <div class="terminal-header">
+      <div class="terminal-dots">
+        <span class="dot dot-red"></span>
+        <span class="dot dot-yellow"></span>
+        <span class="dot dot-green"></span>
+      </div>
+      <span class="terminal-title">whoami.sh — 404</span>
+    </div>
+    <div class="terminal-body">
+      <div><span class="prompt">$</span> cat ./page.txt</div>
+      <div class="error-out">cat: ./page.txt: No such file or directory</div>
+      <div><span class="prompt">$</span> cd ~/portfolio<span class="cursor">|</span></div>
+      <div><a class="btn" href="https://salmonisfish.github.io/portfolio/">[ Return Home ]</a></div>
+    </div>
+  </div>
+</body>
+</html>

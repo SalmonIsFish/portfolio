@@ -6,6 +6,8 @@ let wordIndex = 0;
 let letterIndex = 0;
 let isDeleting = false;
 
+const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
 function type() {
   const current = words[wordIndex];
   const el = document.getElementById("typewriter");
@@ -31,7 +33,11 @@ function type() {
 
   setTimeout(type, isDeleting ? 50 : 100);
 }
-type();
+if (prefersReducedMotion) {
+  document.getElementById("typewriter").textContent = "Building tools.";
+} else {
+  type();
+}
 
 // ============================================
 // PARTICLES
@@ -53,21 +59,33 @@ for (let i = 0; i < 80; i++) {
   });
 }
 
+let particlesPaused = false;
+
 function animateDots() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  dots.forEach(dot => {
-    ctx.beginPath();
-    ctx.arc(dot.x, dot.y, dot.radius, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(167, 139, 250, 0.6)';
-    ctx.fill();
-    dot.x += dot.speedX;
-    dot.y += dot.speedY;
-    if (dot.x < 0 || dot.x > canvas.width) dot.speedX *= -1;
-    if (dot.y < 0 || dot.y > canvas.height) dot.speedY *= -1;
-  });
+  if (!particlesPaused) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    dots.forEach(dot => {
+      ctx.beginPath();
+      ctx.arc(dot.x, dot.y, dot.radius, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(167, 139, 250, 0.6)';
+      ctx.fill();
+      dot.x += dot.speedX;
+      dot.y += dot.speedY;
+      if (dot.x < 0 || dot.x > canvas.width) dot.speedX *= -1;
+      if (dot.y < 0 || dot.y > canvas.height) dot.speedY *= -1;
+    });
+  }
   requestAnimationFrame(animateDots);
 }
-animateDots();
+if (!prefersReducedMotion) {
+  animateDots();
+} else {
+  particlesPaused = true;
+}
+
+document.addEventListener("visibilitychange", () => {
+  particlesPaused = document.hidden || prefersReducedMotion;
+});
 
 window.addEventListener("resize", () => {
   canvas.width = window.innerWidth;
@@ -108,7 +126,15 @@ function typeTerminal() {
     }, delay);
   });
 }
-typeTerminal();
+if (prefersReducedMotion) {
+  terminalLines.forEach(line => {
+    terminalBody.insertAdjacentHTML("beforeend",
+      `<div class="terminal-line show"><span class="terminal-prompt">${line.prompt}</span> <span class="terminal-cmd">${line.cmd}</span></div>` +
+      `<div class="terminal-line show"><span class="terminal-output">${line.output}</span></div>`);
+  });
+} else {
+  typeTerminal();
+}
 
 // ============================================
 // NAVBAR SCROLL EFFECT
@@ -157,35 +183,37 @@ const fadeObserver = new IntersectionObserver((entries) => {
 fadeElements.forEach(el => fadeObserver.observe(el));
 
 // ============================================
-// CONTACT MODAL & GAME (kept from original)
+// CONTACT & GAME (Easter egg)
 // ============================================
 console.log("%cHey there, curious dev! \ud83d\udc40", "color: #a78bfa; font-size: 20px; font-weight: bold;");
 console.log("%cLike what you see? Let's connect on LinkedIn!", "color: #60a5fa; font-size: 14px;");
 
-const modal = document.getElementById("game-modal");
-const contactBtn = document.getElementById("contact-btn");
-const skipBtn = document.getElementById("skip-btn");
-
-contactBtn.addEventListener("click", () => {
-  modal.classList.remove("hidden");
-});
-
 const contactReveal = document.getElementById("contact-reveal");
+const gameContainer = document.getElementById("game-container");
+const closeGameBtn = document.getElementById("close-game");
+const eggGameBtn = document.getElementById("egg-game-btn");
+const copyEmailBtn = document.getElementById("copy-email-btn");
 
-skipBtn.addEventListener("click", () => {
-  modal.classList.add("hidden");
+function revealContact() {
   contactReveal.classList.remove("hidden");
   contactReveal.classList.add("show");
+}
+
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && !gameContainer.classList.contains("hidden")) {
+    closeGameBtn.click();
+    eggGameBtn.focus();
+  }
 });
 
-const gameContainer = document.getElementById("game-container");
-const playBtn = document.getElementById("play-btn");
-const closeGameBtn = document.getElementById("close-game");
-
-playBtn.addEventListener("click", () => {
-  modal.classList.add("hidden");
+function startGame() {
   gameContainer.classList.remove("hidden");
+  closeGameBtn.focus();
   resizeGameCanvas();
+  const touchHint = document.getElementById("game-touch-hint");
+  const isTouch = "ontouchstart" in window;
+  document.getElementById("game-instructions").hidden = isTouch;
+  touchHint.hidden = !isTouch;
   ship.x = 100;
   ship.y = gameCanvas.height / 2;
   enemies = [];
@@ -198,11 +226,29 @@ playBtn.addEventListener("click", () => {
   clearInterval(enemySpawnTimer);
   enemySpawnTimer = setInterval(spawnEnemy, 1200);
   gameLoop();
-});
+}
+
+eggGameBtn.addEventListener("click", startGame);
 
 closeGameBtn.addEventListener("click", () => {
   gameContainer.classList.add("hidden");
   clearInterval(enemySpawnTimer);
+});
+
+copyEmailBtn.addEventListener("click", async () => {
+  const email = "adibluqman117@gmail.com";
+  try {
+    await navigator.clipboard.writeText(email);
+  } catch {
+    const tmp = document.createElement("textarea");
+    tmp.value = email;
+    document.body.appendChild(tmp);
+    tmp.select();
+    document.execCommand("copy");
+    tmp.remove();
+  }
+  copyEmailBtn.textContent = "Copied!";
+  setTimeout(() => { copyEmailBtn.textContent = "Copy Email"; }, 2000);
 });
 
 // === SPACESHIP GAME ===
@@ -233,12 +279,30 @@ function updateShip() {
   spawnTrailParticle();
 }
 
+// === TOUCH CONTROLS ===
+let touchActive = false;
+
+function handleTouch(e) {
+  e.preventDefault();
+  touchActive = true;
+  const t = e.touches[0];
+  if (!t) return;
+  const rect = gameCanvas.getBoundingClientRect();
+  ship.x = Math.max(0, Math.min(gameCanvas.width - ship.width, t.clientX - rect.left - ship.width / 2));
+  ship.y = Math.max(0, Math.min(gameCanvas.height - ship.height, t.clientY - rect.top - ship.height / 2));
+}
+
+gameCanvas.addEventListener("touchstart", handleTouch, { passive: false });
+gameCanvas.addEventListener("touchmove", handleTouch, { passive: false });
+gameCanvas.addEventListener("touchend", () => { touchActive = false; });
+
 function gameLoop() {
   gctx.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
   drawPlanets();
   updateGameStars();
   drawGameStars();
   updateShip();
+  if (touchActive) shootBullet();
   updateTrail();
   drawTrail();
   drawShip();
@@ -312,7 +376,7 @@ function shootBullet() {
   bullets.push({ x: ship.x + ship.width, y: ship.y + ship.height / 2 - 3, width: 10, height: 6, speed: 9 });
 }
 window.addEventListener("keydown", (e) => {
-  if (e.key === " ") { e.preventDefault(); shootBullet(); }
+  if (e.key === " " && !gameContainer.classList.contains("hidden")) { e.preventDefault(); shootBullet(); }
 });
 
 function updateBullets() {
@@ -447,17 +511,22 @@ function drawExplosions() {
     return Array.from(document.querySelectorAll('.lightbox-trigger[data-group="' + group + '"]'));
   }
 
+  let lastFocused = null;
+
   function openLightbox(group, startIndex) {
+    lastFocused = document.activeElement;
     currentGroup = getImagesInGroup(group);
     currentIndex = startIndex;
     render();
     lightbox.classList.add('active');
     document.body.style.overflow = 'hidden';
+    btnClose.focus();
   }
 
   function closeLightbox() {
     lightbox.classList.remove('active');
     document.body.style.overflow = '';
+    if (lastFocused) lastFocused.focus();
   }
 
   function render() {
@@ -517,6 +586,12 @@ function drawExplosions() {
       var groupImages = getImagesInGroup(group);
       var idx = groupImages.indexOf(trigger);
       openLightbox(group, idx >= 0 ? idx : 0);
+    });
+    trigger.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        trigger.click();
+      }
     });
   });
 })();

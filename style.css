@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;800;900&family=JetBrains+Mono:wght@400;500;700&family=Syne:wght@400;600;700;800&display=swap');
-
 :root {
   --bg: #0a0c10;
   --bg-2: #0f1117;
@@ -56,6 +54,25 @@ body::after {
 a, a:visited, a:hover, a:active {
   color: inherit;
   text-decoration: none;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  html { scroll-behavior: auto; }
+  .fade-in-element {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
 }
 
 .container {
@@ -525,6 +542,21 @@ section {
   line-height: 1.8;
   color: var(--text-2);
 }
+.about-skills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 28px;
+}
+.about-skills span {
+  background: var(--accent-dim);
+  color: var(--accent);
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-family: var(--font-mono);
+}
 
 /* ===== ACTIVITIES ===== */
 .activity-grid {
@@ -788,17 +820,6 @@ section {
 }
 .project-card:hover::before { opacity: 1; }
 
-.project-emoji {
-  font-size: 8rem;
-  margin-bottom: 20px;
-  filter: drop-shadow(0 0 20px rgba(96, 165, 250, 0.5));
-  line-height: 1;
-  text-align: center;
-  height: 260px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
 .project-card h3 {
   font-family: var(--font-display);
   font-size: 1.2rem;
@@ -832,6 +853,26 @@ section {
   margin-top: auto;
 }
 .project-card a:hover { color: var(--accent); }
+
+.portfolio-preview {
+  height: 260px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-3);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+.portfolio-preview-code {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  line-height: 1.9;
+  color: var(--text-2);
+}
+.pp-key { color: var(--accent); }
+.pp-var { color: var(--accent-2); }
+.pp-str { color: var(--gold); }
 
 /* ===== LIGHTBOX ===== */
 .lightbox {
@@ -990,6 +1031,29 @@ section {
   box-shadow: 0 12px 32px rgba(167, 139, 250, 0.35);
 }
 #contact-btn:hover::before { opacity: 1; }
+.contact-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.contact-egg {
+  margin-top: 40px;
+  font-size: 0.85rem !important;
+  color: var(--text-3) !important;
+}
+.link-button {
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: var(--font-mono);
+  font-size: inherit;
+  color: var(--accent);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.link-button:hover { color: var(--gold); }
 .contact-reveal { margin-top: 30px; }
 .contact-reveal.show {
   animation: popIn 0.5s ease forwards;
@@ -1145,6 +1209,20 @@ section {
   z-index: 2001;
   animation: fadeOut 2.5s ease forwards;
   pointer-events: none;
+}
+#game-touch-hint {
+  position: absolute;
+  bottom: 40px; left: 50%;
+  transform: translateX(-50%);
+  color: white;
+  font-size: 0.9rem;
+  background: rgba(0,0,0,0.6);
+  padding: 10px 20px;
+  border-radius: 12px;
+  z-index: 2001;
+  animation: fadeOut 4s ease forwards;
+  pointer-events: none;
+  white-space: nowrap;
 }
 @keyframes fadeOut {
   0%, 60% { opacity: 1; }
