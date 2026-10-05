@@ -11,7 +11,7 @@ Static personal portfolio site (HTML/CSS/JS only). No build tools, package manag
 ## Structure
 - `index.html` — single-page entry point
 - `style.css` — all styles (responsive breakpoints at 768px)
-- `script.js` — typewriter effect, particle background, hidden space shooter game
+- `script.js` — hero gate-chain animation, lightbox, hidden space shooter game
 - Image assets (`.jpeg`, `.png`) in root directory
 
 ## Key Details

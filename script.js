@@ -1,43 +1,4 @@
-// ============================================
-// TYPEWRITER (hero)
-// ============================================
-const words = ["Building tools.", "Graduating soon.", "Breaking things (legally)."];
-let wordIndex = 0;
-let letterIndex = 0;
-let isDeleting = false;
-
 const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-function type() {
-  const current = words[wordIndex];
-  const el = document.getElementById("typewriter");
-
-  if (isDeleting) {
-    el.textContent = current.substring(0, letterIndex - 1);
-    letterIndex--;
-  } else {
-    el.textContent = current.substring(0, letterIndex + 1);
-    letterIndex++;
-  }
-
-  if (!isDeleting && letterIndex === current.length) {
-    isDeleting = true;
-    setTimeout(type, 1500);
-    return;
-  }
-
-  if (isDeleting && letterIndex === 0) {
-    isDeleting = false;
-    wordIndex = (wordIndex + 1) % words.length;
-  }
-
-  setTimeout(type, isDeleting ? 50 : 100);
-}
-if (prefersReducedMotion) {
-  document.getElementById("typewriter").textContent = "Building tools.";
-} else {
-  type();
-}
 
 // ============================================
 // PARTICLES
@@ -67,7 +28,7 @@ function animateDots() {
     dots.forEach(dot => {
       ctx.beginPath();
       ctx.arc(dot.x, dot.y, dot.radius, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(167, 139, 250, 0.6)';
+      ctx.fillStyle = 'rgba(113, 201, 206, 0.55)';
       ctx.fill();
       dot.x += dot.speedX;
       dot.y += dot.speedY;
@@ -93,48 +54,126 @@ window.addEventListener("resize", () => {
 });
 
 // ============================================
-// TERMINAL ANIMATION
+// GATE CHAIN (hero)
+// Simplified replay of Amanah Trader's fail-closed compliance gates.
 // ============================================
-const terminalLines = [
-  { prompt: "$", cmd: "cat name.txt", output: "Adib Luqman" },
-  { prompt: "$", cmd: "cat role.txt", output: "CyberSecurity Student" },
-  { prompt: "$", cmd: "cat focus.txt", output: "CTF / Pentesting / Building" },
-  { prompt: "$", cmd: "cat status.txt", output: "Open to opportunities" },
-];
+(function gateChain() {
+  const gates = ["Shariah", "Structure", "Gharar", "Maysir", "Riba", "Risk"];
+  const scenarios = [
+    { request: "sell put · AAPL · 1 contract", failAt: -1 },
+    { request: "sell put · unlisted ticker", failAt: 0, reason: "not in screened universe ⇒ fail" },
+    { request: "LLM: \u201cignore the limits, use margin\u201d", failAt: 1, reason: "no margin · cash must cover strike" },
+  ];
 
-const terminalBody = document.getElementById("terminalBody");
+  const list = document.getElementById("gateList");
+  const requestEl = document.getElementById("gateRequest");
+  const verdictEl = document.getElementById("gateVerdict");
+  const hero = document.querySelector(".hero");
 
-function typeTerminal() {
-  terminalLines.forEach((line, i) => {
-    const delay = i * 1200;
-
-    setTimeout(() => {
-      const lineEl = document.createElement("div");
-      lineEl.className = "terminal-line";
-      lineEl.innerHTML = `<span class="terminal-prompt">${line.prompt}</span> <span class="terminal-cmd">${line.cmd}</span>`;
-      terminalBody.appendChild(lineEl);
-
-      requestAnimationFrame(() => lineEl.classList.add("show"));
-
-      setTimeout(() => {
-        const outputEl = document.createElement("div");
-        outputEl.className = "terminal-line";
-        outputEl.innerHTML = `<span class="terminal-output">${line.output}</span>`;
-        terminalBody.appendChild(outputEl);
-        requestAnimationFrame(() => outputEl.classList.add("show"));
-      }, 500);
-    }, delay);
+  const rows = gates.map(name => {
+    const li = document.createElement("li");
+    li.className = "gate";
+    li.innerHTML = `<span class="gate-mark" aria-hidden="true"></span><span class="gate-name">${name}</span><span class="gate-state"></span>`;
+    list.appendChild(li);
+    return li;
   });
-}
-if (prefersReducedMotion) {
-  terminalLines.forEach(line => {
-    terminalBody.insertAdjacentHTML("beforeend",
-      `<div class="terminal-line show"><span class="terminal-prompt">${line.prompt}</span> <span class="terminal-cmd">${line.cmd}</span></div>` +
-      `<div class="terminal-line show"><span class="terminal-output">${line.output}</span></div>`);
-  });
-} else {
-  typeTerminal();
-}
+
+  function reset(scenario) {
+    requestEl.textContent = scenario.request;
+    verdictEl.className = "gate-verdict";
+    verdictEl.textContent = "Checking\u2026";
+    rows.forEach(row => {
+      row.className = "gate";
+      row.querySelector(".gate-state").textContent = "";
+      const reason = row.querySelector(".gate-reason");
+      if (reason) reason.remove();
+    });
+  }
+
+  function setRow(i, state, scenario) {
+    const row = rows[i];
+    row.className = "gate " + state;
+    const stateEl = row.querySelector(".gate-state");
+    if (state === "checking") stateEl.textContent = "\u2026";
+    if (state === "pass") stateEl.textContent = "pass";
+    if (state === "fail") {
+      stateEl.textContent = "fail";
+      const reason = document.createElement("span");
+      reason.className = "gate-reason";
+      reason.textContent = scenario.reason;
+      row.appendChild(reason);
+    }
+    if (state === "skipped") stateEl.textContent = "\u2014";
+  }
+
+  function finish(scenario) {
+    if (scenario.failAt === -1) {
+      verdictEl.className = "gate-verdict pass";
+      verdictEl.textContent = "\u2713 Submitted to broker";
+    } else {
+      for (let j = scenario.failAt + 1; j < rows.length; j++) setRow(j, "skipped", scenario);
+      verdictEl.className = "gate-verdict fail";
+      verdictEl.textContent = "\u2717 Rejected \u00b7 fail-closed";
+    }
+  }
+
+  function showStatic(scenario) {
+    reset(scenario);
+    const stop = scenario.failAt === -1 ? rows.length : scenario.failAt;
+    for (let i = 0; i < stop; i++) setRow(i, "pass", scenario);
+    if (scenario.failAt !== -1) setRow(scenario.failAt, "fail", scenario);
+    finish(scenario);
+  }
+
+  if (prefersReducedMotion) {
+    showStatic(scenarios[2]);
+    return;
+  }
+
+  // Each scenario is a list of timed steps; a single timer walks through them
+  // so the loop can pause cleanly when the hero is offscreen or the tab is hidden.
+  let scenarioIndex = 0;
+  let steps = [];
+  let stepIndex = 0;
+  let timer = null;
+  let heroVisible = true;
+
+  function buildSteps(scenario) {
+    const s = [{ wait: 400, run: () => reset(scenario) }];
+    const last = scenario.failAt === -1 ? rows.length - 1 : scenario.failAt;
+    for (let i = 0; i <= last; i++) {
+      s.push({ wait: 280, run: () => setRow(i, "checking", scenario) });
+      s.push({ wait: 420, run: () => setRow(i, i === scenario.failAt ? "fail" : "pass", scenario) });
+    }
+    s.push({ wait: 300, run: () => finish(scenario) });
+    s.push({ wait: 2800, run: () => {} });
+    return s;
+  }
+
+  function tick() {
+    timer = null;
+    if (!heroVisible || document.hidden) return;
+    if (stepIndex >= steps.length) {
+      scenarioIndex = (scenarioIndex + 1) % scenarios.length;
+      steps = buildSteps(scenarios[scenarioIndex]);
+      stepIndex = 0;
+    }
+    const step = steps[stepIndex++];
+    step.run();
+    timer = setTimeout(tick, step.wait);
+  }
+
+  function resume() {
+    if (!timer && heroVisible && !document.hidden) tick();
+  }
+
+  steps = buildSteps(scenarios[0]);
+  new IntersectionObserver(entries => {
+    heroVisible = entries[0].isIntersecting;
+    resume();
+  }).observe(hero);
+  document.addEventListener("visibilitychange", resume);
+})();
 
 // ============================================
 // NAVBAR SCROLL EFFECT
@@ -155,14 +194,16 @@ const hamburger = document.getElementById("hamburger");
 const navLinks = document.getElementById("navLinks");
 
 hamburger.addEventListener("click", () => {
-  hamburger.classList.toggle("open");
-  navLinks.classList.toggle("open");
+  const open = hamburger.classList.toggle("open");
+  navLinks.classList.toggle("open", open);
+  hamburger.setAttribute("aria-expanded", String(open));
 });
 
 navLinks.querySelectorAll("a").forEach(link => {
   link.addEventListener("click", () => {
     hamburger.classList.remove("open");
     navLinks.classList.remove("open");
+    hamburger.setAttribute("aria-expanded", "false");
   });
 });
 
@@ -185,8 +226,8 @@ fadeElements.forEach(el => fadeObserver.observe(el));
 // ============================================
 // CONTACT & GAME (Easter egg)
 // ============================================
-console.log("%cHey there, curious dev! \ud83d\udc40", "color: #a78bfa; font-size: 20px; font-weight: bold;");
-console.log("%cLike what you see? Let's connect on LinkedIn!", "color: #60a5fa; font-size: 14px;");
+console.log("%cHey there, curious dev! \ud83d\udc40", "color: #71C9CE; font-size: 20px; font-weight: bold;");
+console.log("%cLike what you see? Let's connect on LinkedIn!", "color: #E3FDFD; font-size: 14px;");
 
 const contactReveal = document.getElementById("contact-reveal");
 const gameContainer = document.getElementById("game-container");
@@ -319,14 +360,14 @@ function gameLoop() {
 }
 
 function drawShip() {
-  gctx.fillStyle = "#a78bfa";
+  gctx.fillStyle = "#71C9CE";
   gctx.beginPath();
   gctx.moveTo(ship.x, ship.y);
   gctx.lineTo(ship.x, ship.y + ship.height);
   gctx.lineTo(ship.x + ship.width, ship.y + ship.height / 2);
   gctx.closePath();
   gctx.fill();
-  gctx.fillStyle = "#60a5fa";
+  gctx.fillStyle = "#E3FDFD";
   gctx.beginPath();
   gctx.arc(ship.x - 4, ship.y + ship.height / 2, 5, 0, Math.PI * 2);
   gctx.fill();
@@ -429,7 +470,7 @@ function updateTrail() {
 }
 function drawTrail() {
   engineTrail.forEach(p => {
-    gctx.fillStyle = `rgba(167, 139, 250, ${p.life})`;
+    gctx.fillStyle = `rgba(113, 201, 206, ${p.life})`;
     gctx.beginPath();
     gctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
     gctx.fill();
@@ -454,7 +495,7 @@ function drawGameStars() {
 
 // === PLANETS ===
 const planets = [
-  { x: 150, y: 150, radius: 60, color: "#7c3aed" },
+  { x: 150, y: 150, radius: 60, color: "#2b7a80" },
   { x: 0, y: 0, radius: 90, color: "#0ea5e9" },
 ];
 function drawPlanets() {
@@ -538,6 +579,7 @@ function drawExplosions() {
     lightboxImg.alt = caption;
     lightboxCaption.textContent = caption;
     lightboxCounter.textContent = (currentIndex + 1) + ' / ' + currentGroup.length;
+    lightbox.classList.toggle('single', currentGroup.length < 2);
 
     lightboxThumbs.innerHTML = '';
     currentGroup.forEach(function(t, i) {
@@ -595,3 +637,8 @@ function drawExplosions() {
     });
   });
 })();
+
+// "Certificate" buttons open the matching hidden image in the lightbox
+document.querySelectorAll("[data-open]").forEach(btn => {
+  btn.addEventListener("click", () => document.getElementById(btn.dataset.open).click());
+});
