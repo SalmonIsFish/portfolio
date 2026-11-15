@@ -10,9 +10,12 @@ Static personal portfolio site (HTML/CSS/JS only). No build tools, package manag
 
 ## Structure
 - `index.html` — single-page entry point
-- `style.css` — all styles (responsive breakpoints at 768px)
-- `script.js` — hero gate-chain animation, lightbox, hidden space shooter game
-- Image assets (`.jpeg`, `.png`) in root directory
+- `style.css` — all styles. "Control room" theme: colour and font tokens in `:root` (sky blue `--accent` is the only accent; green/red are reserved for pass/fail; palette from colorhunt.co/palette/02152603346e6eacdae2e2b6). Breakpoints at 1000, 820, 768 and 600px
+- `script.js` — interactive hero gate-chain demo, Ctrl/Cmd+K command menu, cursor spotlight/tilt, stats count-up, lightbox, hidden space shooter game
+- Image assets (`.webp`, `.jpeg`, `.png`) in root directory; convert new photos to `.webp`
+- Command menu and lightbox are native `<dialog>` elements opened with `showModal()`
+- Motion is opt-in: content is visible by default and animations only run under `prefers-reduced-motion: no-preference`
+- To add an event: copy an `<li class="event">` in the timeline and bump its `--i` index
 
 ## Key Details
 - Deployed via GitHub Pages from `main` branch

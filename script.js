@@ -1,87 +1,99 @@
 const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-// ============================================
-// PARTICLES
-// ============================================
-const canvas = document.getElementById('particles');
-const ctx = canvas.getContext('2d');
-
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
-
-let dots = [];
-for (let i = 0; i < 80; i++) {
-  dots.push({
-    x: Math.random() * canvas.width,
-    y: Math.random() * canvas.height,
-    radius: Math.random() * 2,
-    speedX: (Math.random() - 0.5) * 0.5,
-    speedY: (Math.random() - 0.5) * 0.5
-  });
-}
-
-let particlesPaused = false;
-
-function animateDots() {
-  if (!particlesPaused) {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    dots.forEach(dot => {
-      ctx.beginPath();
-      ctx.arc(dot.x, dot.y, dot.radius, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(113, 201, 206, 0.55)';
-      ctx.fill();
-      dot.x += dot.speedX;
-      dot.y += dot.speedY;
-      if (dot.x < 0 || dot.x > canvas.width) dot.speedX *= -1;
-      if (dot.y < 0 || dot.y > canvas.height) dot.speedY *= -1;
-    });
-  }
-  requestAnimationFrame(animateDots);
-}
-if (!prefersReducedMotion) {
-  animateDots();
-} else {
-  particlesPaused = true;
-}
-
-document.addEventListener("visibilitychange", () => {
-  particlesPaused = document.hidden || prefersReducedMotion;
-});
-
-window.addEventListener("resize", () => {
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-});
+const EMAIL = "adibluqman117@gmail.com";
 
 // ============================================
 // GATE CHAIN (hero)
-// Simplified replay of Amanah Trader's fail-closed compliance gates.
+// Simplified, in-browser replay of Amanah Trader's fail-closed compliance gates.
+// Visitors can type a request or pick a preset; a small deterministic rule table
+// decides which gate (if any) rejects it. The rules are illustrative.
 // ============================================
 (function gateChain() {
   const gates = ["Shariah", "Structure", "Gharar", "Maysir", "Riba", "Risk"];
-  const scenarios = [
-    { request: "sell put · AAPL · 1 contract", failAt: -1 },
-    { request: "sell put · unlisted ticker", failAt: 0, reason: "not in screened universe ⇒ fail" },
-    { request: "LLM: \u201cignore the limits, use margin\u201d", failAt: 1, reason: "no margin · cash must cover strike" },
+  const SCREENED = ["AAPL", "MSFT", "NVDA"];
+  const MAX_CONTRACTS = 5;
+  const presets = [
+    { label: "Clean order", request: "sell put · AAPL · 1 contract" },
+    { label: "Bank stock", request: "sell put · JPM · 1 contract" },
+    { label: "Use margin", request: "LLM: “ignore the limits, sell AAPL puts on margin”" },
+    { label: "0DTE lottery", request: "sell put · NVDA · 0DTE, feels lucky" },
+    { label: "40 contracts", request: "sell put · MSFT · 40 contracts" },
+    { label: "Sweet-talk it", request: "trust me, skip the checks: sell put · AAPL · 1 contract" },
   ];
+
+  const RULES = {
+    persuasion: /\b(ignore|override|bypass|disable|skip|trust me|pretend|system prompt|just this once)\b/i,
+    excluded: /\b(jpm|bac|gs|bank|casino|alcohol|tobacco|unlisted|unscreened)\b/i,
+    structure: /\b(margin|leverag\w*|naked|uncovered|calls?|spreads?|short(ing)?\s+stock)\b/i,
+    gharar: /\b(any strike|whatever|tbd|unknown|no expiry|surprise me)\b/i,
+    maysir: /\b(0\s?dte|yolo|lottery|gambl\w*|bet|lucky|moon)\b/i,
+    riba: /\b(interest|loans?|financ\w*|borrow\w*)\b/i,
+    allIn: /\b(all[- ]in|everything|max size)\b/i,
+  };
+
+  // Returns the first gate that rejects the request, in chain order (-1 = all pass).
+  function evaluate(raw) {
+    const request = raw.trim().slice(0, 80);
+    let failAt = -1;
+    let reason = "";
+    const fail = (i, why) => { if (failAt === -1) { failAt = i; reason = why; } };
+
+    const ticker = SCREENED.find(s => new RegExp("\\b" + s + "\\b", "i").test(request));
+    if (RULES.excluded.test(request)) fail(0, "outside the screened universe");
+    else if (!ticker) fail(0, "no screened ticker named ⇒ fail closed");
+    if (RULES.structure.test(request)) fail(1, "cash-secured puts only · cash must cover strike");
+    if (RULES.gharar.test(request)) fail(2, "terms left open · strike and expiry must be fixed");
+    if (RULES.maysir.test(request)) fail(3, "a bet, not an investment");
+    if (RULES.riba.test(request)) fail(4, "no interest-bearing financing");
+    const sizes = (request.match(/\b\d+\b/g) || []).map(Number);
+    const biggest = Math.max(0, ...sizes);
+    if (biggest > MAX_CONTRACTS) fail(5, biggest + " contracts is over the " + MAX_CONTRACTS + "-contract limit");
+    else if (RULES.allIn.test(request)) fail(5, "over the position size limit");
+
+    const note = RULES.persuasion.test(request)
+      ? "Persuasion isn’t an input. The gates only read the order."
+      : "";
+    return { request, failAt, reason, note };
+  }
 
   const list = document.getElementById("gateList");
   const requestEl = document.getElementById("gateRequest");
+  const noteEl = document.getElementById("gateNote");
   const verdictEl = document.getElementById("gateVerdict");
+  const toggle = document.getElementById("gateToggle");
+  const form = document.getElementById("gateForm");
+  const input = document.getElementById("gateInput");
+  const chipsEl = document.getElementById("gateChips");
   const hero = document.querySelector(".hero");
 
-  const rows = gates.map(name => {
+  const rows = gates.map((name, i) => {
     const li = document.createElement("li");
     li.className = "gate";
-    li.innerHTML = `<span class="gate-mark" aria-hidden="true"></span><span class="gate-name">${name}</span><span class="gate-state"></span>`;
+    li.innerHTML = `<span class="gate-mark" aria-hidden="true"></span><span class="gate-num" aria-hidden="true">G${i + 1}</span><span class="gate-name">${name}</span><span class="gate-state"></span>`;
     list.appendChild(li);
     return li;
   });
 
+  const chips = presets.map((preset, i) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "gate-chip";
+    btn.textContent = preset.label;
+    btn.setAttribute("aria-pressed", "false");
+    btn.addEventListener("click", () => runManual(preset.request, i));
+    chipsEl.appendChild(btn);
+    return btn;
+  });
+
+  function markChip(index) {
+    chips.forEach((chip, i) => chip.setAttribute("aria-pressed", String(i === index)));
+  }
+
   function reset(scenario) {
     requestEl.textContent = scenario.request;
+    noteEl.textContent = scenario.note;
+    noteEl.hidden = !scenario.note;
     verdictEl.className = "gate-verdict";
-    verdictEl.textContent = "Checking\u2026";
+    verdictEl.textContent = "Checking…";
     rows.forEach(row => {
       row.className = "gate";
       row.querySelector(".gate-state").textContent = "";
@@ -94,7 +106,7 @@ window.addEventListener("resize", () => {
     const row = rows[i];
     row.className = "gate " + state;
     const stateEl = row.querySelector(".gate-state");
-    if (state === "checking") stateEl.textContent = "\u2026";
+    if (state === "checking") stateEl.textContent = "…";
     if (state === "pass") stateEl.textContent = "pass";
     if (state === "fail") {
       stateEl.textContent = "fail";
@@ -103,17 +115,17 @@ window.addEventListener("resize", () => {
       reason.textContent = scenario.reason;
       row.appendChild(reason);
     }
-    if (state === "skipped") stateEl.textContent = "\u2014";
+    if (state === "skipped") stateEl.textContent = "—";
   }
 
   function finish(scenario) {
     if (scenario.failAt === -1) {
       verdictEl.className = "gate-verdict pass";
-      verdictEl.textContent = "\u2713 Submitted to broker";
+      verdictEl.textContent = "✓ Submitted to broker";
     } else {
       for (let j = scenario.failAt + 1; j < rows.length; j++) setRow(j, "skipped", scenario);
       verdictEl.className = "gate-verdict fail";
-      verdictEl.textContent = "\u2717 Rejected \u00b7 fail-closed";
+      verdictEl.textContent = "✗ Rejected · fail-closed";
     }
   }
 
@@ -125,14 +137,10 @@ window.addEventListener("resize", () => {
     finish(scenario);
   }
 
-  if (prefersReducedMotion) {
-    showStatic(scenarios[2]);
-    return;
-  }
-
   // Each scenario is a list of timed steps; a single timer walks through them
-  // so the loop can pause cleanly when the hero is offscreen or the tab is hidden.
-  let scenarioIndex = 0;
+  // so the replay can pause cleanly when the hero is offscreen or the tab is hidden.
+  let auto = !prefersReducedMotion;
+  let presetIndex = 0;
   let steps = [];
   let stepIndex = 0;
   let timer = null;
@@ -150,95 +158,224 @@ window.addEventListener("resize", () => {
     return s;
   }
 
+  function load(scenario) {
+    steps = buildSteps(scenario);
+    stepIndex = 0;
+  }
+
   function tick() {
     timer = null;
     if (!heroVisible || document.hidden) return;
     if (stepIndex >= steps.length) {
-      scenarioIndex = (scenarioIndex + 1) % scenarios.length;
-      steps = buildSteps(scenarios[scenarioIndex]);
-      stepIndex = 0;
+      if (!auto) return;
+      presetIndex = (presetIndex + 1) % presets.length;
+      load(evaluate(presets[presetIndex].request));
+      markChip(presetIndex);
     }
     const step = steps[stepIndex++];
     step.run();
     timer = setTimeout(tick, step.wait);
   }
 
-  function resume() {
+  function play() {
     if (!timer && heroVisible && !document.hidden) tick();
   }
 
-  steps = buildSteps(scenarios[0]);
+  function setAuto(on) {
+    auto = on;
+    // The label names the action; no aria-pressed, so it is never announced as a pressed "Auto-play".
+    toggle.textContent = on ? "Pause" : "Auto-play";
+    // Only announce verdicts the visitor asked for, not every loop of the replay.
+    verdictEl.setAttribute("aria-live", on ? "off" : "polite");
+  }
+
+  function runManual(text, chipIndex) {
+    const scenario = evaluate(text);
+    setAuto(false);
+    clearTimeout(timer);
+    timer = null;
+    markChip(chipIndex);
+    if (prefersReducedMotion) {
+      showStatic(scenario);
+      return;
+    }
+    load(scenario);
+    play();
+  }
+
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    if (!input.value.trim()) {
+      input.focus();
+      return;
+    }
+    runManual(input.value, -1);
+  });
+
+  toggle.addEventListener("click", () => {
+    // Pausing lets the current request finish so the panel never freezes mid-check.
+    setAuto(!auto);
+    if (auto) play();
+  });
+
+  if (prefersReducedMotion) {
+    toggle.hidden = true;
+    verdictEl.setAttribute("aria-live", "polite");
+    markChip(2);
+    showStatic(evaluate(presets[2].request));
+    return;
+  }
+
+  load(evaluate(presets[0].request));
+  markChip(0);
   new IntersectionObserver(entries => {
     heroVisible = entries[0].isIntersecting;
-    resume();
+    play();
   }).observe(hero);
-  document.addEventListener("visibilitychange", resume);
+  document.addEventListener("visibilitychange", play);
 })();
 
 // ============================================
-// NAVBAR SCROLL EFFECT
-// ============================================
-const navbar = document.getElementById("navbar");
-window.addEventListener("scroll", () => {
-  if (window.scrollY > 50) {
-    navbar.classList.add("scrolled");
-  } else {
-    navbar.classList.remove("scrolled");
-  }
-});
-
-// ============================================
-// HAMBURGER TOGGLE
+// NAV: mobile toggle + current section highlight
 // ============================================
 const hamburger = document.getElementById("hamburger");
 const navLinks = document.getElementById("navLinks");
+
+function closeMobileNav() {
+  hamburger.classList.remove("open");
+  navLinks.classList.remove("open");
+  hamburger.setAttribute("aria-expanded", "false");
+}
 
 hamburger.addEventListener("click", () => {
   const open = hamburger.classList.toggle("open");
   navLinks.classList.toggle("open", open);
   hamburger.setAttribute("aria-expanded", String(open));
 });
+navLinks.querySelectorAll("a").forEach(link => link.addEventListener("click", closeMobileNav));
 
-navLinks.querySelectorAll("a").forEach(link => {
-  link.addEventListener("click", () => {
-    hamburger.classList.remove("open");
-    navLinks.classList.remove("open");
-    hamburger.setAttribute("aria-expanded", "false");
-  });
-});
-
-// ============================================
-// SCROLL FADE-IN (IntersectionObserver)
-// ============================================
-const fadeElements = document.querySelectorAll(".fade-in-element");
-
-const fadeObserver = new IntersectionObserver((entries) => {
+const sectionObserver = new IntersectionObserver(entries => {
   entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      entry.target.classList.add("visible");
-      fadeObserver.unobserve(entry.target);
-    }
+    if (!entry.isIntersecting) return;
+    navLinks.querySelectorAll("a").forEach(link => {
+      if (link.getAttribute("href") === "#" + entry.target.id) link.setAttribute("aria-current", "true");
+      else link.removeAttribute("aria-current");
+    });
   });
-}, { threshold: 0.1 });
+}, { rootMargin: "-45% 0px -50% 0px" });
+document.querySelectorAll("main section[id]").forEach(section => sectionObserver.observe(section));
 
-fadeElements.forEach(el => fadeObserver.observe(el));
+// ============================================
+// SCROLL REVEAL fallback
+// Browsers with scroll-driven animations handle .reveal in CSS. Elsewhere,
+// fall back to an IntersectionObserver. Content stays visible without either.
+// ============================================
+if (!prefersReducedMotion && !CSS.supports("animation-timeline", "view()")) {
+  document.documentElement.classList.add("js-reveal");
+  const revealObserver = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add("visible");
+        revealObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1 });
+  document.querySelectorAll(".reveal").forEach(el => revealObserver.observe(el));
+}
+
+// ============================================
+// STATS count-up
+// ============================================
+if (!prefersReducedMotion) {
+  const countObserver = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (!entry.isIntersecting) return;
+      countObserver.unobserve(entry.target);
+      const el = entry.target;
+      const end = Number(el.dataset.count);
+      const start = performance.now();
+      const duration = 900;
+      function frame(now) {
+        const p = Math.min(1, (now - start) / duration);
+        el.textContent = Math.round(end * (1 - Math.pow(1 - p, 3)));
+        if (p < 1) requestAnimationFrame(frame);
+      }
+      requestAnimationFrame(frame);
+    });
+  }, { threshold: 0.6 });
+  document.querySelectorAll("[data-count]").forEach(el => countObserver.observe(el));
+}
+
+// ============================================
+// SPOTLIGHT + TILT (mouse only)
+// ============================================
+if (window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
+  const MAX_TILT = 2.5;
+  document.querySelectorAll("[data-spot]").forEach(el => {
+    const tilt = el.hasAttribute("data-tilt") && !prefersReducedMotion;
+    el.addEventListener("pointermove", (e) => {
+      const r = el.getBoundingClientRect();
+      const x = e.clientX - r.left;
+      const y = e.clientY - r.top;
+      el.style.setProperty("--mx", x + "px");
+      el.style.setProperty("--my", y + "px");
+      el.classList.add("spot-on");
+      if (tilt) {
+        el.style.setProperty("--ry", ((x / r.width - 0.5) * 2 * MAX_TILT).toFixed(2) + "deg");
+        el.style.setProperty("--rx", ((0.5 - y / r.height) * 2 * MAX_TILT).toFixed(2) + "deg");
+      }
+    });
+    el.addEventListener("pointerleave", () => {
+      el.classList.remove("spot-on");
+      el.style.removeProperty("--rx");
+      el.style.removeProperty("--ry");
+    });
+  });
+}
+
+// ============================================
+// TOAST + COPY EMAIL
+// ============================================
+const toast = document.getElementById("toast");
+let toastTimer;
+function showToast(message) {
+  toast.textContent = message;
+  toast.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toast.classList.remove("show"), 2200);
+}
+
+async function copyEmail() {
+  try {
+    await navigator.clipboard.writeText(EMAIL);
+  } catch {
+    const tmp = document.createElement("textarea");
+    tmp.value = EMAIL;
+    document.body.appendChild(tmp);
+    tmp.select();
+    document.execCommand("copy");
+    tmp.remove();
+  }
+  showToast("Email copied");
+}
+
+const copyEmailBtn = document.getElementById("copy-email-btn");
+copyEmailBtn.addEventListener("click", async () => {
+  await copyEmail();
+  copyEmailBtn.textContent = "Copied";
+  setTimeout(() => { copyEmailBtn.textContent = "Copy email"; }, 2000);
+});
 
 // ============================================
 // CONTACT & GAME (Easter egg)
 // ============================================
-console.log("%cHey there, curious dev! \ud83d\udc40", "color: #71C9CE; font-size: 20px; font-weight: bold;");
-console.log("%cLike what you see? Let's connect on LinkedIn!", "color: #E3FDFD; font-size: 14px;");
+console.log("%cHey there, curious dev! 👀", "color: #6eacda; font-size: 20px; font-weight: bold;");
+console.log("%cLike what you see? Let's connect on LinkedIn!", "color: #ecedd8; font-size: 14px;");
 
 const contactReveal = document.getElementById("contact-reveal");
 const gameContainer = document.getElementById("game-container");
 const closeGameBtn = document.getElementById("close-game");
 const eggGameBtn = document.getElementById("egg-game-btn");
-const copyEmailBtn = document.getElementById("copy-email-btn");
-
-function revealContact() {
-  contactReveal.classList.remove("hidden");
-  contactReveal.classList.add("show");
-}
 
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape" && !gameContainer.classList.contains("hidden")) {
@@ -276,21 +413,115 @@ closeGameBtn.addEventListener("click", () => {
   clearInterval(enemySpawnTimer);
 });
 
-copyEmailBtn.addEventListener("click", async () => {
-  const email = "adibluqman117@gmail.com";
-  try {
-    await navigator.clipboard.writeText(email);
-  } catch {
-    const tmp = document.createElement("textarea");
-    tmp.value = email;
-    document.body.appendChild(tmp);
-    tmp.select();
-    document.execCommand("copy");
-    tmp.remove();
+// ============================================
+// COMMAND MENU (Ctrl/Cmd + K)
+// ============================================
+(function commandMenu() {
+  const palette = document.getElementById("palette");
+  const input = document.getElementById("paletteInput");
+  const listEl = document.getElementById("paletteList");
+  const emptyEl = document.getElementById("paletteEmpty");
+  const openBtn = document.getElementById("paletteBtn");
+  const lightbox = document.getElementById("lightbox");
+
+  const go = (hash) => () => { location.hash = hash; };
+  const openTab = (url) => () => window.open(url, "_blank", "noopener");
+  const commands = [
+    { label: "Go to Work", kind: "Section", run: go("#work") },
+    { label: "Go to Events", kind: "Section", run: go("#events") },
+    { label: "Go to About", kind: "Section", run: go("#about") },
+    { label: "Go to Contact", kind: "Section", run: go("#contact") },
+    { label: "Copy email address", kind: "Action", run: copyEmail },
+    { label: "Write me an email", kind: "Action", run: () => { location.href = "mailto:" + EMAIL; } },
+    { label: "Open GitHub", kind: "Link", run: openTab("https://github.com/SalmonIsFish") },
+    { label: "Open LinkedIn", kind: "Link", run: openTab("https://www.linkedin.com/in/adib-luqman-b63683273/") },
+    { label: "Play the hidden game", kind: "Game", run: () => startGame() },
+  ];
+
+  if (/Mac|iPhone|iPad/.test(navigator.platform)) {
+    document.getElementById("paletteKbd").textContent = "⌘ K";
   }
-  copyEmailBtn.textContent = "Copied!";
-  setTimeout(() => { copyEmailBtn.textContent = "Copy Email"; }, 2000);
-});
+
+  let matches = [];
+  let active = 0;
+
+  function setActive(index) {
+    active = index;
+    listEl.querySelectorAll(".palette-item").forEach((item, i) => {
+      item.setAttribute("aria-selected", String(i === active));
+      if (i === active) {
+        input.setAttribute("aria-activedescendant", item.id);
+        item.scrollIntoView({ block: "nearest" });
+      }
+    });
+  }
+
+  function render() {
+    const q = input.value.trim().toLowerCase();
+    matches = commands.filter(c => (c.label + " " + c.kind).toLowerCase().includes(q));
+    listEl.replaceChildren(...matches.map((cmd, i) => {
+      const li = document.createElement("li");
+      li.id = "cmd-" + i;
+      li.className = "palette-item";
+      li.setAttribute("role", "option");
+      const name = document.createElement("span");
+      name.textContent = cmd.label;
+      const kind = document.createElement("small");
+      kind.textContent = cmd.kind;
+      li.append(name, kind);
+      li.addEventListener("click", () => runCommand(cmd));
+      li.addEventListener("pointermove", () => { if (active !== i) setActive(i); });
+      return li;
+    }));
+    emptyEl.hidden = matches.length > 0;
+    listEl.hidden = matches.length === 0;
+    input.removeAttribute("aria-activedescendant");
+    if (matches.length) setActive(0);
+  }
+
+  function runCommand(cmd) {
+    palette.close();
+    cmd.run();
+  }
+
+  function openPalette() {
+    if (palette.open || lightbox.open || !gameContainer.classList.contains("hidden")) return;
+    closeMobileNav();
+    input.value = "";
+    render();
+    palette.showModal();
+  }
+
+  input.addEventListener("input", render);
+  input.addEventListener("keydown", (e) => {
+    if (!matches.length) return;
+    if (e.key === "ArrowDown") { e.preventDefault(); setActive((active + 1) % matches.length); }
+    if (e.key === "ArrowUp") { e.preventDefault(); setActive((active - 1 + matches.length) % matches.length); }
+    if (e.key === "Enter") { e.preventDefault(); runCommand(matches[active]); }
+  });
+
+  openBtn.addEventListener("click", openPalette);
+  document.addEventListener("keydown", (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+      e.preventDefault();
+      if (palette.open) palette.close();
+      else openPalette();
+    }
+  });
+
+  // Click-outside-to-close for browsers without <dialog closedby>.
+  if (!("closedBy" in HTMLDialogElement.prototype)) {
+    const outside = (e, dialog) => {
+      const r = dialog.getBoundingClientRect();
+      return e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom;
+    };
+    for (const dialog of document.querySelectorAll('dialog[closedby="any"]')) {
+      let pressedOutside = false;
+      dialog.addEventListener("pointerdown", (e) => { pressedOutside = outside(e, dialog); });
+      dialog.addEventListener("pointerup", (e) => { if (pressedOutside && outside(e, dialog)) dialog.close(); });
+    }
+  }
+})();
 
 // === SPACESHIP GAME ===
 const gameCanvas = document.getElementById("game-canvas");
@@ -360,14 +591,14 @@ function gameLoop() {
 }
 
 function drawShip() {
-  gctx.fillStyle = "#71C9CE";
+  gctx.fillStyle = "#6eacda";
   gctx.beginPath();
   gctx.moveTo(ship.x, ship.y);
   gctx.lineTo(ship.x, ship.y + ship.height);
   gctx.lineTo(ship.x + ship.width, ship.y + ship.height / 2);
   gctx.closePath();
   gctx.fill();
-  gctx.fillStyle = "#E3FDFD";
+  gctx.fillStyle = "#ecedd8";
   gctx.beginPath();
   gctx.arc(ship.x - 4, ship.y + ship.height / 2, 5, 0, Math.PI * 2);
   gctx.fill();
@@ -426,7 +657,7 @@ function updateBullets() {
 }
 
 function drawBullets() {
-  gctx.fillStyle = "#fbbf24";
+  gctx.fillStyle = "#ecedd8";
   bullets.forEach(b => gctx.fillRect(b.x, b.y, b.width, b.height));
 }
 
@@ -470,7 +701,7 @@ function updateTrail() {
 }
 function drawTrail() {
   engineTrail.forEach(p => {
-    gctx.fillStyle = `rgba(113, 201, 206, ${p.life})`;
+    gctx.fillStyle = `rgba(110, 172, 218, ${p.life})`;
     gctx.beginPath();
     gctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
     gctx.fill();
@@ -495,8 +726,8 @@ function drawGameStars() {
 
 // === PLANETS ===
 const planets = [
-  { x: 150, y: 150, radius: 60, color: "#2b7a80" },
-  { x: 0, y: 0, radius: 90, color: "#0ea5e9" },
+  { x: 150, y: 150, radius: 60, color: "#1f5f99" },
+  { x: 0, y: 0, radius: 90, color: "#3ddc97" },
 ];
 function drawPlanets() {
   planets.forEach(p => {
@@ -533,7 +764,7 @@ function drawExplosions() {
 }
 
 // ============================================
-// LIGHTBOX
+// LIGHTBOX (native <dialog>: focus, Esc and inert page come from the browser)
 // ============================================
 (function() {
   const lightbox = document.getElementById('lightbox');
@@ -552,42 +783,69 @@ function drawExplosions() {
     return Array.from(document.querySelectorAll('.lightbox-trigger[data-group="' + group + '"]'));
   }
 
-  let lastFocused = null;
+  // The clicked photo morphs into the lightbox image (and back) where view
+  // transitions are available; otherwise the dialog just opens and closes.
+  function canMorph(trigger) {
+    return document.startViewTransition && !prefersReducedMotion && trigger && !trigger.hidden;
+  }
 
   function openLightbox(group, startIndex) {
-    lastFocused = document.activeElement;
     currentGroup = getImagesInGroup(group);
     currentIndex = startIndex;
-    render();
-    lightbox.classList.add('active');
-    document.body.style.overflow = 'hidden';
-    btnClose.focus();
+    const trigger = currentGroup[currentIndex];
+    const show = function() {
+      render();
+      lightbox.showModal();
+    };
+    if (!canMorph(trigger)) {
+      show();
+      return;
+    }
+    trigger.style.viewTransitionName = 'lb';
+    const transition = document.startViewTransition(async function() {
+      trigger.style.viewTransitionName = '';
+      show();
+      lightboxImg.style.viewTransitionName = 'lb';
+      try { await lightboxImg.decode(); } catch { /* still show the photo */ }
+    });
+    transition.finished.finally(function() {
+      lightboxImg.style.viewTransitionName = '';
+    });
   }
 
   function closeLightbox() {
-    lightbox.classList.remove('active');
-    document.body.style.overflow = '';
-    if (lastFocused) lastFocused.focus();
+    const trigger = currentGroup[currentIndex];
+    if (!canMorph(trigger)) {
+      lightbox.close();
+      return;
+    }
+    lightboxImg.style.viewTransitionName = 'lb';
+    const transition = document.startViewTransition(function() {
+      lightboxImg.style.viewTransitionName = '';
+      lightbox.close();
+      trigger.style.viewTransitionName = 'lb';
+    });
+    transition.finished.finally(function() {
+      trigger.style.viewTransitionName = '';
+    });
   }
 
   function render() {
     const trigger = currentGroup[currentIndex];
-    const src = trigger.tagName === 'IMG' ? trigger.src : trigger.querySelector('img').src;
     const caption = trigger.dataset.caption || '';
 
-    lightboxImg.src = src;
-    lightboxImg.alt = caption;
+    lightboxImg.src = trigger.src;
+    lightboxImg.alt = trigger.alt || caption;
     lightboxCaption.textContent = caption;
     lightboxCounter.textContent = (currentIndex + 1) + ' / ' + currentGroup.length;
     lightbox.classList.toggle('single', currentGroup.length < 2);
 
     lightboxThumbs.innerHTML = '';
     currentGroup.forEach(function(t, i) {
-      const thumbSrc = t.tagName === 'IMG' ? t.src : t.querySelector('img').src;
       const thumb = document.createElement('img');
       thumb.className = 'lightbox-thumb' + (i === currentIndex ? ' active' : '');
-      thumb.src = thumbSrc;
-      thumb.alt = 'Thumbnail ' + (i + 1);
+      thumb.src = t.src;
+      thumb.alt = 'Photo ' + (i + 1);
       thumb.addEventListener('click', function() {
         currentIndex = i;
         render();
@@ -610,13 +868,19 @@ function drawExplosions() {
   btnNext.addEventListener('click', goNext);
   btnPrev.addEventListener('click', goPrev);
 
+  // The dialog fills the viewport, so a click on its empty area is a click "outside" the photo.
   lightbox.addEventListener('click', function(e) {
     if (e.target === lightbox) closeLightbox();
   });
 
-  document.addEventListener('keydown', function(e) {
-    if (!lightbox.classList.contains('active')) return;
-    if (e.key === 'Escape') closeLightbox();
+  // Esc: run the same animated close as the button.
+  lightbox.addEventListener('cancel', function(e) {
+    e.preventDefault();
+    closeLightbox();
+  });
+
+  lightbox.addEventListener('keydown', function(e) {
+    if (currentGroup.length < 2) return;
     if (e.key === 'ArrowRight') goNext();
     if (e.key === 'ArrowLeft') goPrev();
   });
@@ -624,10 +888,9 @@ function drawExplosions() {
   document.querySelectorAll('.lightbox-trigger').forEach(function(trigger) {
     trigger.addEventListener('click', function(e) {
       e.preventDefault();
-      var group = trigger.dataset.group;
-      var groupImages = getImagesInGroup(group);
-      var idx = groupImages.indexOf(trigger);
-      openLightbox(group, idx >= 0 ? idx : 0);
+      const groupImages = getImagesInGroup(trigger.dataset.group);
+      const idx = groupImages.indexOf(trigger);
+      openLightbox(trigger.dataset.group, idx >= 0 ? idx : 0);
     });
     trigger.addEventListener('keydown', function(e) {
       if (e.key === 'Enter' || e.key === ' ') {
