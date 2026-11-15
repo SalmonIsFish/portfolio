@@ -16,6 +16,7 @@ Static personal portfolio site (HTML/CSS/JS only). No build tools, package manag
 - Command menu and lightbox are native `<dialog>` elements opened with `showModal()`
 - Motion is opt-in: content is visible by default and animations only run under `prefers-reduced-motion: no-preference`
 - To add an event: copy an `<li class="event">` in the timeline and bump its `--i` index
+- Space theme: `#stars` canvas starfield (drawn in `script.js`), CSS nebula on `body::before`, CSS solar system (`.cosmos`) behind the gate panel, and an SVG spaceship button (`#ship`) that opens the game. Decorative `.deco` objects (ringed planet, asteroids from the `#rock` SVG symbol, moon) sit behind sections and drift on scroll; the waving alien in a UFO (`#alien`) above Contact also opens the game. The game's `drawShip()` uses the same ship shapes as the SVG
 
 ## Key Details
 - Deployed via GitHub Pages from `main` branch

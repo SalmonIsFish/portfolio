@@ -1,6 +1,8 @@
 :root {
-  /* Control room: deep navy panels, one sky-blue signal colour, green/red only for pass/fail.
+  /* Space: deep navy sky, one sky-blue signal colour, cream sun, green/red only for pass/fail.
      Palette from colorhunt.co/palette/02152603346e6eacdae2e2b6 */
+  --sun: #e2e2b6;
+  --glass: rgba(5, 28, 51, .8);
   --bg: #021526;
   --bg-deep: #010e1a;
   --panel: #051c33;
@@ -47,20 +49,20 @@ body {
   overflow-x: clip;
 }
 
-/* Faint instrument grid behind everything */
+/* Nebula clouds (behind the stars) */
 body::before {
   content: '';
   position: fixed;
   inset: 0;
-  z-index: -1;
+  z-index: -2;
   pointer-events: none;
-  background-image:
-    linear-gradient(rgba(255, 255, 255, .025) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, .025) 1px, transparent 1px);
-  background-size: 56px 56px;
-  -webkit-mask-image: radial-gradient(ellipse 90% 70% at 50% 0%, #000 30%, transparent 85%);
-  mask-image: radial-gradient(ellipse 90% 70% at 50% 0%, #000 30%, transparent 85%);
+  background:
+    radial-gradient(ellipse 55% 45% at 88% 8%, rgba(110, 172, 218, .11), transparent 70%),
+    radial-gradient(ellipse 50% 40% at 4% 55%, rgba(3, 52, 110, .45), transparent 70%),
+    radial-gradient(ellipse 60% 40% at 70% 100%, rgba(110, 172, 218, .07), transparent 70%);
 }
+/* Starfield canvas, drawn by script.js */
+#stars { position: fixed; inset: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; }
 
 main { overflow-x: clip; } /* keeps the hero glow from widening the page */
 img { display: block; max-width: 100%; }
@@ -90,19 +92,25 @@ button, input { font: inherit; color: inherit; }
 }
 .eyebrow { color: var(--accent); }
 
+/* Small glowing star (nav logo, gate panel title) */
 .led {
   display: inline-block;
-  width: 8px; height: 8px;
+  width: 7px; height: 7px;
   border-radius: 50%;
-  background: var(--accent);
-  box-shadow: 0 0 10px var(--accent);
+  background: #fffbe6;
+  box-shadow: 0 0 6px 1px var(--sun), 0 0 14px 2px rgba(110, 172, 218, .55);
   flex: none;
+}
+@keyframes twinkle { from { opacity: .55; } to { opacity: 1; } }
+@media (prefers-reduced-motion: no-preference) {
+  .led { animation: twinkle 2.6s ease-in-out infinite alternate; }
 }
 
 /* ===== PANELS + SPOTLIGHT ===== */
+/* Slightly see-through so the starfield shows behind them */
 .panel, .tile, .event-card, .gate-panel {
   position: relative;
-  background: var(--panel);
+  background: var(--glass);
   border: 1px solid var(--line);
   border-radius: var(--radius);
 }
@@ -260,15 +268,6 @@ kbd {
   gap: clamp(32px, 5vw, 72px);
   align-items: center;
 }
-.hero::after {
-  content: '';
-  position: absolute;
-  top: 8%; right: -12%;
-  width: 640px; height: 640px;
-  background: radial-gradient(circle, rgba(110, 172, 218, .1) 0%, transparent 65%);
-  pointer-events: none;
-  z-index: -1;
-}
 .hero-text { display: flex; flex-direction: column; gap: 22px; align-items: flex-start; }
 .hero-title {
   font-family: var(--font-display);
@@ -290,8 +289,10 @@ kbd {
 .hero-social a:hover, .footer-links a:hover { color: var(--accent); }
 
 /* ===== GATE DEMO (signature) ===== */
-.gate-demo { width: 100%; }
+.gate-demo { width: 100%; position: relative; }
 .gate-panel {
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
   font-family: var(--font-mono);
   font-stretch: 87.5%;
   font-size: .74rem;
@@ -431,6 +432,254 @@ kbd {
 
 @keyframes pulse { from { opacity: .35; } to { opacity: 1; } }
 
+/* ===== SOLAR SYSTEM (hero, behind the gate panel) =====
+   Orbits are flattened circles (scaleY) for a tilted look. Each planet
+   counter-rotates and un-squashes itself so it stays round. */
+.cosmos {
+  --size: 760px;
+  --tilt: .34;
+  position: absolute;
+  /* Sun sits beside the gate panel, at its middle height, in the space to its right */
+  left: calc(100% + clamp(-20px, (100vw - 1160px) / 2 - 10px, 70px));
+  top: 46%;
+  width: var(--size);
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  rotate: -14deg;
+  z-index: -1;
+  pointer-events: none;
+}
+.ring {
+  position: absolute;
+  left: calc(50% - var(--r) * 1%);
+  width: calc(var(--r) * 2%);
+  top: calc(50% - var(--r) * var(--tilt) * 1%);
+  height: calc(var(--r) * var(--tilt) * 2%);
+  border: 1px solid rgba(110, 172, 218, .3);
+  border-radius: 50%;
+}
+.sun {
+  position: absolute;
+  left: 50%; top: 50%;
+  width: 76px; height: 76px;
+  translate: -50% -50%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 38%, #fffdf0 0%, var(--sun) 38%, #c9b77a 75%, #8f7a45 100%);
+  box-shadow: 0 0 36px 14px rgba(226, 226, 182, .45), 0 0 120px 50px rgba(226, 226, 182, .12), 0 0 220px 90px rgba(110, 172, 218, .14);
+}
+.orbit {
+  position: absolute;
+  inset: calc(50% - var(--r) * 1%);
+  transform: scaleY(var(--tilt));
+}
+.spin { position: absolute; inset: 0; rotate: var(--start); }
+.planet {
+  position: absolute;
+  left: 50%; top: 0;
+  translate: -50% -50%;
+  border-radius: 50%;
+  /* undo the spin and the orbit squash so the planet stays a circle */
+  transform: rotate(calc(-1 * var(--start))) scaleY(calc(1 / var(--tilt)));
+}
+@keyframes orbit-spin { to { rotate: calc(var(--start) + 360deg); } }
+@keyframes orbit-counter {
+  from { transform: rotate(calc(-1 * var(--start))) scaleY(calc(1 / var(--tilt))); }
+  to { transform: rotate(calc(-1 * var(--start) - 360deg)) scaleY(calc(1 / var(--tilt))); }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .spin { animation: orbit-spin var(--t) linear infinite; }
+  .planet { animation: orbit-counter var(--t) linear infinite; }
+}
+.planet-1 { width: 10px; height: 10px; background: radial-gradient(circle at 35% 30%, #d9ecf8, var(--accent) 55%, #2a5f8c); }
+.planet-2 {
+  width: 16px; height: 16px;
+  background: radial-gradient(circle at 35% 30%, #fffbe6, #d8c890 55%, #8a7444);
+}
+.planet-2::after {
+  content: '';
+  position: absolute;
+  left: 50%; top: 50%;
+  width: 32px; height: 9px;
+  translate: -50% -50%;
+  rotate: -22deg;
+  border: 1.5px solid rgba(226, 226, 182, .75);
+  border-radius: 50%;
+}
+.planet-3 {
+  width: 22px; height: 22px;
+  background: radial-gradient(circle at 35% 30%, #a9d1ef, #3b78ad 50%, #03346e);
+  box-shadow: 0 0 18px rgba(110, 172, 218, .35);
+}
+.planet-4 { width: 12px; height: 12px; background: radial-gradient(circle at 35% 30%, #f3f3e0, #9fb4c9 55%, #4d6580); }
+
+/* ===== SPACESHIP (button that opens the game) ===== */
+.ship {
+  position: absolute;
+  left: -64px; top: -62px;
+  z-index: 2;
+  padding: 6px;
+  background: none;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  filter: drop-shadow(0 0 14px rgba(110, 172, 218, .45));
+}
+.ship-body { display: block; }
+.ship svg { display: block; transition: translate .3s var(--ease); }
+.ship:hover svg { translate: 6px 0; }
+.ship-flame { transform-box: view-box; transform-origin: 22px 30px; }
+.ship-tip {
+  position: absolute;
+  top: 100%; left: 50%;
+  translate: -50% 2px;
+  padding: 4px 10px;
+  border: 1px solid var(--line-2);
+  border-radius: 999px;
+  background: var(--raised);
+  font-family: var(--font-mono);
+  font-stretch: 87.5%;
+  font-size: .6rem;
+  white-space: nowrap;
+  color: var(--accent);
+  opacity: 0;
+  transition: opacity .2s;
+  pointer-events: none;
+}
+.ship:hover .ship-tip, .ship:focus-visible .ship-tip { opacity: 1; }
+
+@keyframes ship-bob { from { translate: 0 0; rotate: -2deg; } to { translate: 0 -10px; rotate: 2deg; } }
+@keyframes flame-flicker { from { scale: .75 1; } to { scale: 1.1 1; } }
+@keyframes ship-away { to { translate: 70vw -55vh; rotate: -22deg; opacity: 0; } }
+@media (prefers-reduced-motion: no-preference) {
+  .ship-body { animation: ship-bob 3.6s ease-in-out infinite alternate; }
+  .ship-flame { animation: flame-flicker .35s ease-in-out infinite alternate; }
+  /* The ship flies off up and to the right as you scroll out of the hero.
+     Wide screens only: on narrow screens the ship starts below the fold. */
+  @supports ((animation-timeline: scroll()) and (animation-range: 0px 100px)) {
+  @media (min-width: 1001px) {
+    .ship {
+      animation: ship-away linear both;
+      animation-timeline: scroll(root);
+      animation-range: 40px 75vh;
+    }
+  }
+  }
+}
+
+/* ===== SPACE OBJECTS BETWEEN SECTIONS =====
+   Decorative, behind the content. The outer .deco drifts as you scroll (parallax);
+   the inner element does its own slow spin or bob. */
+.deco { position: absolute; z-index: -1; pointer-events: none; }
+@keyframes drift {
+  from { translate: 0 var(--drift, 90px); }
+  to { translate: 0 calc(var(--drift, 90px) * -1); }
+}
+@media (prefers-reduced-motion: no-preference) {
+  @supports ((animation-timeline: view()) and (animation-range: entry)) {
+    .deco {
+      animation: drift linear both;
+      animation-timeline: view();
+    }
+  }
+}
+
+/* Ringed planet, top right of Work */
+.deco-ringed { top: 60px; right: -170px; width: 420px; height: 260px; --drift: 120px; }
+.ringed-globe {
+  position: absolute;
+  left: 50%; top: 50%;
+  width: 230px; height: 230px;
+  translate: -50% -50%;
+  border-radius: 50%;
+  background:
+    radial-gradient(ellipse 120% 18% at 50% 38%, rgba(226, 226, 182, .14), transparent 60%),
+    radial-gradient(ellipse 120% 14% at 50% 62%, rgba(2, 21, 38, .35), transparent 60%),
+    radial-gradient(circle at 32% 30%, #a9d1ef, #3b78ad 42%, #03346e 72%, #021526);
+  box-shadow: inset -26px -18px 50px rgba(1, 14, 26, .75), 0 0 90px rgba(110, 172, 218, .22);
+}
+.ringed-back, .ringed-front {
+  position: absolute;
+  left: 50%; top: 50%;
+  width: 420px; height: 96px;
+  translate: -50% -50%;
+  rotate: -16deg;
+  border-radius: 50%;
+  border: 10px solid rgba(226, 226, 182, .35);
+  box-shadow: 0 0 0 4px rgba(226, 226, 182, .12);
+}
+/* the lower half of the ring passes in front of the planet */
+.ringed-front { clip-path: inset(50% 0 0 0); }
+
+/* Asteroids beside the Events timeline */
+.deco-rock svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.rock-1 { left: -118px; top: 22%; width: 96px; height: 80px; --drift: 160px; }
+.rock-2 { right: -100px; top: 48%; width: 64px; height: 54px; --drift: 240px; }
+.rock-3 { left: -78px; top: 76%; width: 46px; height: 38px; --drift: 110px; }
+@keyframes tumble { to { rotate: 360deg; } }
+@media (prefers-reduced-motion: no-preference) {
+  .rock-spin { animation: tumble 38s linear infinite; }
+  .rock-2 .rock-spin { animation-duration: 24s; animation-direction: reverse; }
+  .rock-3 .rock-spin { animation-duration: 30s; }
+}
+
+/* Moon beside About */
+.deco-moon { left: -120px; top: 60px; --drift: 100px; }
+.moon {
+  display: block;
+  width: 92px; height: 92px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 62% 38%, rgba(120, 118, 96, .55) 0 9px, transparent 10px),
+    radial-gradient(circle at 36% 64%, rgba(120, 118, 96, .45) 0 6px, transparent 7px),
+    radial-gradient(circle at 70% 70%, rgba(120, 118, 96, .4) 0 4px, transparent 5px),
+    radial-gradient(circle at 30% 30%, #f6f6e6, #cfcfb4 50%, #8e8e76);
+  box-shadow: inset -16px -12px 26px rgba(1, 14, 26, .6), 0 0 44px rgba(226, 226, 182, .22);
+}
+
+/* Waving alien in a UFO, above the Contact panel (button: opens the game) */
+.alien {
+  position: absolute;
+  top: -10px; right: 8%;
+  z-index: 2;
+  padding: 0;
+  background: none;
+  border: none;
+  border-radius: 16px;
+  cursor: pointer;
+  filter: drop-shadow(0 0 18px rgba(127, 214, 122, .25));
+}
+.alien-ufo { display: block; }
+.alien svg { display: block; width: 180px; height: 160px; }
+.alien-arm { transform-box: view-box; transform-origin: 79px 58px; }
+.alien-hi {
+  position: absolute;
+  top: 8px; right: 100%;
+  margin-right: -14px;
+  padding: 5px 12px;
+  border: 1px solid var(--line-2);
+  border-radius: 999px 999px 4px 999px;
+  background: var(--raised);
+  font-family: var(--font-mono);
+  font-stretch: 87.5%;
+  font-size: .68rem;
+  white-space: nowrap;
+  color: var(--text);
+  opacity: 0;
+  translate: 0 6px;
+  transition: opacity .2s, translate .2s;
+  pointer-events: none;
+}
+.alien:hover .alien-hi, .alien:focus-visible .alien-hi { opacity: 1; translate: 0 0; }
+@keyframes wave { from { rotate: -14deg; } to { rotate: 26deg; } }
+@keyframes ufo-bob { from { translate: 0 0; rotate: -3deg; } to { translate: 0 -10px; rotate: 3deg; } }
+@keyframes ufo-light { from { opacity: .45; } to { opacity: 1; } }
+@media (prefers-reduced-motion: no-preference) {
+  .alien-arm { animation: wave .45s ease-in-out infinite alternate; }
+  .alien-ufo { animation: ufo-bob 3.2s ease-in-out infinite alternate; }
+  .ufo-light { animation: ufo-light 1.4s ease-in-out infinite alternate; }
+  .ufo-light:nth-of-type(even) { animation-delay: -.7s; }
+}
+
 /* ===== STATS READOUT ===== */
 .stats {
   max-width: var(--max);
@@ -460,6 +709,7 @@ kbd {
 
 /* ===== SECTIONS ===== */
 .section {
+  position: relative;
   max-width: var(--max);
   margin: 0 auto;
   padding: clamp(72px, 10vw, 120px) var(--gutter) 0;
@@ -629,25 +879,30 @@ kbd {
 .event { position: relative; grid-row: var(--i) / span 2; }
 .event:nth-child(odd) { grid-column: 1; }
 .event:nth-child(even) { grid-column: 2; }
-/* dot on the line + short connector */
+/* small planet on the line + short connector */
 .event::before {
   content: '';
-  position: absolute; top: 22px;
-  width: 12px; height: 12px;
+  position: absolute; top: 21px;
+  width: 14px; height: 14px;
   border-radius: 50%;
-  background: var(--bg);
-  border: 2px solid var(--accent);
+  background: radial-gradient(circle at 35% 30%, #d9ecf8, var(--accent) 50%, #03346e);
+  box-shadow: 0 0 12px rgba(110, 172, 218, .5);
   z-index: 1;
 }
+.event:nth-child(3n + 2)::before {
+  background: radial-gradient(circle at 35% 30%, #fffbe6, #d8c890 55%, #8a7444);
+  box-shadow: 0 0 12px rgba(226, 226, 182, .45);
+}
+.event:nth-child(3n)::before { background: radial-gradient(circle at 35% 30%, #f3f3e0, #9fb4c9 55%, #4d6580); }
 .event::after {
   content: '';
   position: absolute; top: 27px;
   width: 34px; height: 2px;
   background: var(--line-2);
 }
-.event:nth-child(odd)::before { right: -46px; }
+.event:nth-child(odd)::before { right: -47px; }
 .event:nth-child(odd)::after { right: -34px; }
-.event:nth-child(even)::before { left: -46px; }
+.event:nth-child(even)::before { left: -47px; }
 .event:nth-child(even)::after { left: -34px; }
 
 .event-card { display: flex; flex-direction: column; gap: 12px; padding: 18px; transition: border-color .3s; }
@@ -906,7 +1161,11 @@ dialog::backdrop {
 /* ===== RESPONSIVE ===== */
 @media (max-width: 1000px) {
   .hero { grid-template-columns: 1fr; min-height: auto; padding-top: calc(var(--nav-height) + 40px); }
-  .gate-demo { max-width: 520px; }
+  .gate-demo { max-width: 520px; margin-top: 40px; }
+  /* stacked layout: sun above the panel's top-right corner */
+  .cosmos { --size: 680px; opacity: .8; left: 88%; top: -6%; }
+  .deco-ringed { right: -230px; scale: .7; }
+  .ship { left: 0; top: -80px; }
   .bento { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .tile-a, .tile-b { grid-column: span 2; }
   .tile-build { grid-column: span 1; }
@@ -920,7 +1179,7 @@ dialog::backdrop {
   /* Timeline becomes a single column with the line on the left */
   .timeline-wrap { --line-x: 6px; }
   .timeline { display: flex; flex-direction: column; gap: 20px; padding-left: 34px; }
-  .event:nth-child(n)::before { left: -34px; right: auto; }
+  .event:nth-child(n)::before { left: -35px; right: auto; }
   .event:nth-child(n)::after { left: -22px; right: auto; width: 22px; }
 }
 
@@ -952,6 +1211,15 @@ dialog::backdrop {
   .skills dd { padding-top: 4px; }
   .skills dt:nth-last-of-type(1) { border-bottom: none; }
   .about-text { padding: 22px; }
+  .cosmos { --size: 520px; left: 70%; }
+  .deco { opacity: .6; scale: .6; }
+  .deco-ringed { right: -250px; top: -90px; }
+  .rock-1, .rock-3 { left: -40px; }
+  .rock-2 { right: -30px; }
+  .deco-moon { left: -60px; top: 20px; }
+  .alien { right: 4px; top: -6px; }
+  .alien svg { width: 104px; height: 92px; }
+  .ship svg { width: 80px; height: 43px; }
   .lightbox-prev, .lightbox-next { top: auto; bottom: 64px; translate: none; }
 }
 

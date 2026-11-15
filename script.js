@@ -2,6 +2,126 @@ const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)
 const EMAIL = "adibluqman117@gmail.com";
 
 // ============================================
+// STARFIELD (fixed canvas behind the page)
+// Three depth layers that drift at different speeds as you scroll, a few
+// slowly twinkling stars, and the odd shooting star. Reduced motion: drawn once, still.
+// ============================================
+(function starfield() {
+  const canvas = document.getElementById("stars");
+  const ctx = canvas.getContext("2d");
+  const LAYERS = [
+    { share: 0.62, size: [0.35, 0.85], alpha: [0.25, 0.55], parallax: 0.03 },
+    { share: 0.3, size: [0.8, 1.3], alpha: [0.45, 0.8], parallax: 0.08 },
+    { share: 0.08, size: [1.3, 2], alpha: [0.8, 1], parallax: 0.16 },
+  ];
+  const COLORS = ["236, 237, 216", "226, 226, 182", "110, 172, 218", "255, 255, 255"];
+  const rand = (a, b) => a + Math.random() * (b - a);
+
+  let w = 0, h = 0, stars = [], shot = null, nextShot = 0, frame = 0;
+
+  function build() {
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    w = window.innerWidth;
+    h = window.innerHeight;
+    canvas.width = Math.round(w * dpr);
+    canvas.height = Math.round(h * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const count = Math.min(300, Math.round((w * h) / 4800));
+    stars = [];
+    LAYERS.forEach(layer => {
+      const n = Math.round(count * layer.share);
+      for (let i = 0; i < n; i++) {
+        stars.push({
+          x: Math.random() * w,
+          y: Math.random() * h,
+          r: rand(layer.size[0], layer.size[1]),
+          a: rand(layer.alpha[0], layer.alpha[1]),
+          parallax: layer.parallax,
+          color: COLORS[Math.floor(Math.random() * COLORS.length)],
+          // about a quarter of stars twinkle, each on a slow cycle (3 to 10 s)
+          twinkle: Math.random() < 0.25 ? rand(0.0006, 0.002) : 0,
+          phase: Math.random() * Math.PI * 2,
+        });
+      }
+    });
+  }
+
+  function drawShootingStar(t) {
+    if (!shot && t > nextShot) {
+      shot = { x: rand(w * 0.35, w), y: rand(0, h * 0.35), vx: -rand(6, 9), vy: rand(2.5, 4), life: 1 };
+    }
+    if (!shot) return;
+    const tailX = shot.x - shot.vx * 14, tailY = shot.y - shot.vy * 14;
+    const grad = ctx.createLinearGradient(shot.x, shot.y, tailX, tailY);
+    grad.addColorStop(0, `rgba(255, 251, 230, ${0.9 * shot.life})`);
+    grad.addColorStop(1, "rgba(110, 172, 218, 0)");
+    ctx.strokeStyle = grad;
+    ctx.lineWidth = 1.6;
+    ctx.beginPath();
+    ctx.moveTo(shot.x, shot.y);
+    ctx.lineTo(tailX, tailY);
+    ctx.stroke();
+    shot.x += shot.vx;
+    shot.y += shot.vy;
+    shot.life -= 0.012;
+    if (shot.life <= 0 || shot.x < -200 || shot.y > h + 200) {
+      shot = null;
+      nextShot = t + rand(8000, 15000);
+    }
+  }
+
+  function draw(t, animate) {
+    ctx.clearRect(0, 0, w, h);
+    const scroll = animate ? window.scrollY : 0;
+    for (const s of stars) {
+      let y = (s.y - scroll * s.parallax) % h;
+      if (y < 0) y += h;
+      let a = s.a;
+      if (animate && s.twinkle) a *= 0.55 + 0.45 * Math.sin(t * s.twinkle + s.phase);
+      ctx.fillStyle = `rgba(${s.color}, ${a})`;
+      ctx.beginPath();
+      ctx.arc(s.x, y, s.r, 0, Math.PI * 2);
+      ctx.fill();
+      if (s.r > 1.5) {
+        // soft halo on the brightest stars
+        ctx.fillStyle = `rgba(${s.color}, ${a * 0.18})`;
+        ctx.beginPath();
+        ctx.arc(s.x, y, s.r * 3.2, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+    if (animate) drawShootingStar(t);
+  }
+
+  function loop(t) {
+    frame = 0;
+    if (document.hidden) return;
+    draw(t, true);
+    frame = requestAnimationFrame(loop);
+  }
+
+  build();
+  if (prefersReducedMotion) {
+    draw(0, false);
+  } else {
+    nextShot = performance.now() + 3000;
+    frame = requestAnimationFrame(loop);
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden && !frame) frame = requestAnimationFrame(loop);
+    });
+  }
+
+  let resizeTimer;
+  window.addEventListener("resize", () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      build();
+      if (prefersReducedMotion) draw(0, false);
+    }, 150);
+  });
+})();
+
+// ============================================
 // GATE CHAIN (hero)
 // Simplified, in-browser replay of Amanah Trader's fail-closed compliance gates.
 // Visitors can type a request or pick a preset; a small deterministic rule table
@@ -377,14 +497,18 @@ const gameContainer = document.getElementById("game-container");
 const closeGameBtn = document.getElementById("close-game");
 const eggGameBtn = document.getElementById("egg-game-btn");
 
+// Whatever opened the game (spaceship, "play a game" link, command menu) gets focus back on close.
+let gameOpener = null;
+
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape" && !gameContainer.classList.contains("hidden")) {
     closeGameBtn.click();
-    eggGameBtn.focus();
   }
 });
 
 function startGame() {
+  const active = document.activeElement;
+  gameOpener = active && active !== document.body && active !== closeGameBtn ? active : eggGameBtn;
   gameContainer.classList.remove("hidden");
   closeGameBtn.focus();
   resizeGameCanvas();
@@ -407,10 +531,13 @@ function startGame() {
 }
 
 eggGameBtn.addEventListener("click", startGame);
+document.getElementById("ship").addEventListener("click", startGame);
+document.getElementById("alien").addEventListener("click", startGame);
 
 closeGameBtn.addEventListener("click", () => {
   gameContainer.classList.add("hidden");
   clearInterval(enemySpawnTimer);
+  if (gameOpener && gameOpener.isConnected) gameOpener.focus();
 });
 
 // ============================================
@@ -590,18 +717,54 @@ function gameLoop() {
   }
 }
 
+// Same shapes as the SVG spaceship in the hero (viewBox 0 0 112 60).
+const SHIP_SHAPES = {
+  flame: new Path2D("M22 22 C10 24 2 28 0 30 C2 32 10 36 22 38 Z"),
+  finTop: new Path2D("M40 18 L28 4 L54 16 Z"),
+  finBottom: new Path2D("M40 42 L28 56 L54 44 Z"),
+  hull: new Path2D("M24 18 Q70 12 104 30 Q70 48 24 42 Z"),
+};
+
 function drawShip() {
+  // Fit the hull (x 18 to 104 in the SVG) into the ship's 40px hitbox.
+  const s = ship.width / 86;
+  gctx.save();
+  gctx.translate(ship.x - 18 * s, ship.y + ship.height / 2 - 30 * s);
+  gctx.scale(s, s);
+
+  gctx.save();
+  gctx.translate(22, 30);
+  gctx.scale(0.75 + Math.random() * 0.4, 1);
+  gctx.translate(-22, -30);
+  const flame = gctx.createLinearGradient(22, 0, 0, 0);
+  flame.addColorStop(0, "#fff8e0");
+  flame.addColorStop(0.45, "#6eacda");
+  flame.addColorStop(1, "rgba(110, 172, 218, 0)");
+  gctx.fillStyle = flame;
+  gctx.fill(SHIP_SHAPES.flame);
+  gctx.restore();
+
   gctx.fillStyle = "#6eacda";
-  gctx.beginPath();
-  gctx.moveTo(ship.x, ship.y);
-  gctx.lineTo(ship.x, ship.y + ship.height);
-  gctx.lineTo(ship.x + ship.width, ship.y + ship.height / 2);
-  gctx.closePath();
-  gctx.fill();
+  gctx.fill(SHIP_SHAPES.finTop);
+  gctx.fill(SHIP_SHAPES.finBottom);
+  gctx.fillStyle = "#143f6b";
+  gctx.fillRect(18, 23, 8, 14);
   gctx.fillStyle = "#ecedd8";
+  gctx.fill(SHIP_SHAPES.hull);
+  gctx.strokeStyle = "#6eacda";
+  gctx.lineWidth = 2.5;
+  gctx.lineCap = "round";
   gctx.beginPath();
-  gctx.arc(ship.x - 4, ship.y + ship.height / 2, 5, 0, Math.PI * 2);
+  gctx.moveTo(34, 30);
+  gctx.lineTo(62, 30);
+  gctx.stroke();
+  gctx.fillStyle = "#03346e";
+  gctx.lineWidth = 2;
+  gctx.beginPath();
+  gctx.arc(76, 30, 6, 0, Math.PI * 2);
   gctx.fill();
+  gctx.stroke();
+  gctx.restore();
 }
 
 // === ENEMIES ===
