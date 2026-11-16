@@ -8,22 +8,24 @@
   <meta name="theme-color" content="#021526">
   <meta property="og:type" content="website">
   <meta property="og:title" content="Adib Luqman — Security &amp; AI Agents">
-  <meta property="og:description" content="I build AI agents that can't be talked into breaking the rules.">
+  <meta property="og:description" content="I build AI agents with guardrails that check every action before it runs.">
   <meta property="og:url" content="https://salmonisfish.github.io/portfolio/">
   <meta property="og:image" content="https://salmonisfish.github.io/portfolio/AmanahTrader.webp">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Adib Luqman — Security &amp; AI Agents">
-  <meta name="twitter:description" content="I build AI agents that can't be talked into breaking the rules.">
+  <meta name="twitter:description" content="I build AI agents with guardrails that check every action before it runs.">
   <meta name="twitter:image" content="https://salmonisfish.github.io/portfolio/AmanahTrader.webp">
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400..800&family=Instrument+Sans:ital,wght@0,400..700;1,400&family=Martian+Mono:wdth,wght@75..112.5,400..600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400..700&family=Instrument+Sans:ital,wght@0,400..700;1,400&family=Martian+Mono:wdth,wght@75..112.5,400..600&family=Orbitron:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <a class="skip-link" href="#work">Skip to work</a>
+  <!-- Drifting star layers (stars generated in script.js) -->
+  <div class="star-sky" aria-hidden="true"><span class="sky-1"></span><span class="sky-2"></span><span class="sky-3"></span></div>
   <canvas id="stars" aria-hidden="true"></canvas>
 
   <!-- Shared asteroid shape -->
@@ -34,6 +36,16 @@
         <stop offset=".5" stop-color="#5d7590"/>
         <stop offset="1" stop-color="#26384c"/>
       </radialGradient>
+      <linearGradient id="visorShine" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#c9b5e0" stop-opacity=".55"/>
+        <stop offset=".5" stop-color="#6061b6" stop-opacity=".15"/>
+        <stop offset="1" stop-color="#6eacda" stop-opacity=".45"/>
+      </linearGradient>
+      <linearGradient id="miniFlame" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#fffdf0"/>
+        <stop offset=".45" stop-color="#c9b5e0"/>
+        <stop offset="1" stop-color="#6eacda" stop-opacity="0"/>
+      </linearGradient>
     </defs>
     <symbol id="rock" viewBox="0 0 60 50">
       <path d="M8 18 L20 6 L38 4 L54 14 L57 30 L46 44 L26 47 L10 40 L3 28 Z" fill="url(#rockShade)"/>
@@ -42,17 +54,51 @@
       <circle cx="30" cy="38" r="2.5" fill="#3a5068"/>
       <circle cx="44" cy="15" r="2" fill="#3a5068"/>
     </symbol>
+    <!-- Astronaut (original drawing). The waving arm is its own group so CSS can animate it. -->
+    <symbol id="astronaut" viewBox="0 0 80 100">
+      <rect x="18" y="40" width="44" height="34" rx="10" fill="#9fb0d8"/>
+      <rect x="22" y="44" width="36" height="40" rx="12" fill="#f4f3ec"/>
+      <rect x="31" y="54" width="18" height="12" rx="3" fill="#c9cfe0"/>
+      <circle cx="35" cy="60" r="2" fill="#6eacda"/>
+      <circle cx="42" cy="60" r="2" fill="#6061b6"/>
+      <rect x="24" y="80" width="13" height="16" rx="5" fill="#e6e5dc"/>
+      <rect x="43" y="80" width="13" height="16" rx="5" fill="#e6e5dc"/>
+      <rect x="23" y="91" width="15" height="6" rx="3" fill="#9fb0d8"/>
+      <rect x="42" y="91" width="15" height="6" rx="3" fill="#9fb0d8"/>
+      <rect x="10" y="50" width="14" height="10" rx="5" fill="#e6e5dc" transform="rotate(25 17 55)"/>
+      <circle cx="40" cy="28" r="20" fill="#f4f3ec"/>
+      <rect x="25" y="18" width="30" height="20" rx="10" fill="#26285e"/>
+      <rect x="25" y="18" width="30" height="20" rx="10" fill="url(#visorShine)"/>
+      <ellipse cx="33" cy="23" rx="5" ry="2.5" fill="#fff" opacity=".7"/>
+      <circle cx="58" cy="20" r="3" fill="#6eacda"/>
+    </symbol>
+    <symbol id="astronaut-arm" viewBox="0 0 80 100">
+      <rect x="56" y="34" width="10" height="24" rx="5" fill="#e6e5dc"/>
+      <circle cx="61" cy="33" r="5.5" fill="#9fb0d8"/>
+    </symbol>
+    <!-- Small upright rocket (original drawing) -->
+    <symbol id="mini-rocket" viewBox="0 0 60 120">
+      <path class="mr-flame" d="M22 88 C24 104 28 112 30 118 C32 112 36 104 38 88 Z" fill="url(#miniFlame)"/>
+      <path d="M12 70 L4 92 L20 84 Z" fill="#6061b6"/>
+      <path d="M48 70 L56 92 L40 84 Z" fill="#6061b6"/>
+      <path d="M30 4 C44 18 48 44 46 86 L14 86 C12 44 16 18 30 4 Z" fill="#fcf9ec"/>
+      <path d="M30 4 C37 11 41 20 43 30 L17 30 C19 20 23 11 30 4 Z" fill="#c9b5e0"/>
+      <circle cx="30" cy="50" r="8" fill="#03346e" stroke="#6eacda" stroke-width="3"/>
+      <circle cx="27.5" cy="47.5" r="2.2" fill="#fff" opacity=".7"/>
+      <rect x="26" y="86" width="8" height="5" rx="1" fill="#7890a8"/>
+    </symbol>
   </svg>
 
   <nav id="navbar" aria-label="Primary">
-    <a href="#top" class="logo"><span class="led" aria-hidden="true"></span>Adib Luqman</a>
+    <span class="nav-stars" aria-hidden="true"></span>
+    <a href="#top" class="logo space-btn"><span class="sb-glow" aria-hidden="true"><span class="sb-circle"></span><span class="sb-circle"></span></span><strong><span class="led" aria-hidden="true"></span>Adib Luqman</strong></a>
     <div class="nav-links" id="navLinks">
-      <a href="#work">Work</a>
-      <a href="#events">Events</a>
-      <a href="#about">About</a>
-      <a href="#contact">Contact</a>
+      <a href="#work" class="space-btn"><span class="sb-glow" aria-hidden="true"><span class="sb-circle"></span><span class="sb-circle"></span></span><strong>Work</strong></a>
+      <a href="#events" class="space-btn"><span class="sb-glow" aria-hidden="true"><span class="sb-circle"></span><span class="sb-circle"></span></span><strong>Events</strong></a>
+      <a href="#about" class="space-btn"><span class="sb-glow" aria-hidden="true"><span class="sb-circle"></span><span class="sb-circle"></span></span><strong>About</strong></a>
+      <a href="#contact" class="space-btn"><span class="sb-glow" aria-hidden="true"><span class="sb-circle"></span><span class="sb-circle"></span></span><strong>Contact</strong></a>
     </div>
-    <button class="palette-btn" id="paletteBtn" type="button" aria-haspopup="dialog">Menu <kbd id="paletteKbd">Ctrl K</kbd></button>
+    <button class="palette-btn space-btn" id="paletteBtn" type="button" aria-haspopup="dialog"><span class="sb-glow" aria-hidden="true"><span class="sb-circle"></span><span class="sb-circle"></span></span><strong>Menu <kbd id="paletteKbd">Ctrl K</kbd></strong></button>
     <button class="hamburger" id="hamburger" aria-label="Toggle menu" aria-expanded="false" aria-controls="navLinks">
       <span></span>
       <span></span>
@@ -64,11 +110,12 @@
     <!-- HERO -->
     <header class="hero">
       <div class="hero-text">
-        <p class="eyebrow">Adib Luqman · Security &amp; AI agents</p>
-        <h1 class="hero-title">I build AI agents that <em>can&rsquo;t be talked into</em> breaking the rules.</h1>
+        <p class="eyebrow">Security &amp; AI agents</p>
+        <h1 class="hero-title">Adib Luqman</h1>
+        <p class="hero-lede">I build AI agents with <em>guardrails that check every action</em> before it runs.</p>
         <p class="hero-sub">Cybersecurity student at UNITEN, CTF player and hackathon builder. In my agents the model can suggest, but plain, testable code decides: every action has to clear fail-closed checks before anything goes through.</p>
         <div class="hero-actions">
-          <a href="mailto:adibluqman117@gmail.com" class="btn btn-primary">Email me</a>
+          <a href="mailto:adibluqman117@gmail.com" class="btn btn-primary btn-galaxy"><span class="btn-stars" aria-hidden="true"></span><span class="btn-label">Email me</span></a>
           <a href="#work" class="btn btn-ghost">See the work <span aria-hidden="true">&darr;</span></a>
           <div class="hero-social">
             <a href="https://github.com/SalmonIsFish" target="_blank" rel="noopener" aria-label="GitHub"><i class="fab fa-github"></i></a>
@@ -151,10 +198,14 @@
 
     <!-- WORK -->
     <section id="work" class="section">
+      <div class="deco deco-astro-work" aria-hidden="true"><span class="tether"></span><span class="astro-float"><svg viewBox="0 0 80 100"><use href="#astronaut"/><use class="astro-arm" href="#astronaut-arm"/></svg></span></div>
       <div class="deco deco-ringed" aria-hidden="true">
-        <span class="ringed-back"></span>
-        <span class="ringed-globe"></span>
-        <span class="ringed-front"></span>
+        <!-- Ringed planet adapted from Uiverse.io by Admin12121 (MIT) -->
+        <div class="uv-planet">
+          <div class="uv-ring"></div>
+          <div class="uv-cover-ring"></div>
+          <div class="uv-spots"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+        </div>
       </div>
       <div class="section-head reveal">
         <p class="eyebrow">Work</p>
@@ -272,6 +323,7 @@
 
     <!-- EVENTS -->
     <section id="events" class="section">
+      <div class="deco deco-flyby" aria-hidden="true"><span class="flyby-trail"></span><svg viewBox="0 0 60 120"><use href="#mini-rocket"/></svg></div>
       <div class="deco deco-rock rock-1" aria-hidden="true"><svg class="rock-spin"><use href="#rock"/></svg></div>
       <div class="deco deco-rock rock-2" aria-hidden="true"><svg class="rock-spin"><use href="#rock"/></svg></div>
       <div class="deco deco-rock rock-3" aria-hidden="true"><svg class="rock-spin"><use href="#rock"/></svg></div>
@@ -285,6 +337,7 @@
         <span class="timeline-progress" aria-hidden="true"></span>
         <ol class="timeline">
           <li class="event reveal" style="--i: 1">
+            <span class="orb" aria-hidden="true"></span>
             <div class="event-card" data-spot>
               <p class="event-head"><time datetime="2026-04">Apr 2026</time><span class="event-role">Program Director</span></p>
               <div class="photo-strip">
@@ -296,6 +349,7 @@
             </div>
           </li>
           <li class="event reveal" style="--i: 2">
+            <span class="orb" aria-hidden="true"></span>
             <div class="event-card" data-spot>
               <p class="event-head"><time datetime="2026-06">Jun 2026</time><span class="event-role">Organizer</span></p>
               <div class="photo-strip">
@@ -307,6 +361,7 @@
             </div>
           </li>
           <li class="event reveal" style="--i: 3">
+            <span class="orb" aria-hidden="true"></span>
             <div class="event-card" data-spot>
               <p class="event-head"><time datetime="2026-07">Jul 2026</time><span class="event-role">Program Director</span></p>
               <div class="photo-strip">
@@ -318,6 +373,7 @@
             </div>
           </li>
           <li class="event reveal" style="--i: 4">
+            <span class="orb" aria-hidden="true"></span>
             <div class="event-card" data-spot>
               <p class="event-head"><time datetime="2026-09">Sep 2026</time><span class="event-role">Host</span></p>
               <div class="photo-strip">
@@ -329,6 +385,7 @@
             </div>
           </li>
           <li class="event reveal" style="--i: 5">
+            <span class="orb" aria-hidden="true"></span>
             <div class="event-card" data-spot>
               <p class="event-head"><time datetime="2026-10">Oct 2026</time><span class="event-role">Host</span></p>
               <div class="photo-strip">
@@ -340,6 +397,7 @@
             </div>
           </li>
           <li class="event reveal" style="--i: 6">
+            <span class="orb" aria-hidden="true"></span>
             <div class="event-card" data-spot>
               <p class="event-head"><time datetime="2026-11">Nov 2026</time><span class="event-role">Host</span></p>
               <div class="photo-strip">
@@ -355,7 +413,7 @@
 
     <!-- ABOUT -->
     <section id="about" class="section about">
-      <div class="deco deco-moon" aria-hidden="true"><span class="moon"></span></div>
+      <div class="deco deco-moon" aria-hidden="true"><span class="astro-sit"><svg viewBox="0 0 80 100"><use href="#astronaut"/><use class="astro-arm" href="#astronaut-arm"/></svg></span><span class="moon"></span></div>
       <div class="section-head reveal">
         <p class="eyebrow">About</p>
         <h2 class="section-title">I study how things break so I can make them hold.</h2>
@@ -376,6 +434,19 @@
 
     <!-- CONTACT -->
     <section id="contact" class="section contact">
+      <!-- Rocket adapted from Uiverse.io by JkHuger (MIT) -->
+      <div class="deco deco-rocket" aria-hidden="true">
+        <div class="uv-rocket">
+          <div class="uv-rocket-body">
+            <div class="uv-body"><span class="uv-window"></span></div>
+            <span class="uv-fin uv-fin-left"></span>
+            <span class="uv-fin uv-fin-right"></span>
+            <span class="uv-exhaust-flame"></span>
+            <ul class="uv-fumes"><li></li><li></li><li></li><li></li><li></li></ul>
+          </div>
+          <ul class="uv-sparkles"><li></li><li></li><li></li><li></li><li></li><li></li></ul>
+        </div>
+      </div>
       <button type="button" class="alien" id="alien" aria-label="Say hi to the alien (opens a mini game)">
         <span class="alien-hi" aria-hidden="true">Hi! 👋</span>
         <span class="alien-ufo">
@@ -426,7 +497,7 @@
         <h2 class="contact-title">Open to internships and interesting problems.</h2>
         <a href="mailto:adibluqman117@gmail.com" class="contact-email">adibluqman117@gmail.com</a>
         <div class="contact-actions">
-          <a href="mailto:adibluqman117@gmail.com" class="btn btn-primary">Email me</a>
+          <a href="mailto:adibluqman117@gmail.com" class="btn btn-primary btn-galaxy"><span class="btn-stars" aria-hidden="true"></span><span class="btn-label">Email me</span></a>
           <button id="copy-email-btn" class="btn btn-ghost" type="button">Copy email</button>
         </div>
         <p class="contact-egg">Or win it the hard way: <button id="egg-game-btn" class="link-button" type="button">play a game</button></p>
@@ -440,6 +511,7 @@
   </main>
 
   <footer class="footer">
+    <span class="footer-rocket" aria-hidden="true"><svg viewBox="0 0 60 120"><use href="#mini-rocket"/></svg></span>
     <p>&copy; 2026 Adib Luqman. Built by hand, no framework.</p>
     <div class="footer-links">
       <a href="https://github.com/SalmonIsFish" target="_blank" rel="noopener" aria-label="GitHub"><i class="fab fa-github"></i></a>

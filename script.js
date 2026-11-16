@@ -2,6 +2,25 @@ const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)
 const EMAIL = "adibluqman117@gmail.com";
 
 // ============================================
+// DRIFTING STAR LAYERS (technique from Uiverse.io by sinful_9361, MIT)
+// Each .star-sky layer is a tiny dot whose box-shadows are the stars, scattered
+// over a 2000px square; CSS drifts the layers upward. Built here so the stylesheet
+// doesn't carry ~1000 hard-coded coordinates.
+// ============================================
+(function starSky() {
+  const layers = [[".sky-1", 700], [".sky-2", 200], [".sky-3", 100]];
+  for (const [selector, count] of layers) {
+    const el = document.querySelector(selector);
+    if (!el) continue;
+    const stars = [];
+    for (let i = 0; i < count; i++) {
+      stars.push(`${Math.round(Math.random() * 2000)}px ${Math.round(Math.random() * 2000)}px #fff`);
+    }
+    el.style.setProperty("--shadows", stars.join(","));
+  }
+})();
+
+// ============================================
 // STARFIELD (fixed canvas behind the page)
 // Three depth layers that drift at different speeds as you scroll, a few
 // slowly twinkling stars, and the odd shooting star. Reduced motion: drawn once, still.
@@ -10,11 +29,12 @@ const EMAIL = "adibluqman117@gmail.com";
   const canvas = document.getElementById("stars");
   const ctx = canvas.getContext("2d");
   const LAYERS = [
-    { share: 0.62, size: [0.35, 0.85], alpha: [0.25, 0.55], parallax: 0.03 },
-    { share: 0.3, size: [0.8, 1.3], alpha: [0.45, 0.8], parallax: 0.08 },
-    { share: 0.08, size: [1.3, 2], alpha: [0.8, 1], parallax: 0.16 },
+    { share: 0.62, size: [0.45, 0.95], alpha: [0.4, 0.7], parallax: 0.03 },
+    { share: 0.3, size: [0.9, 1.45], alpha: [0.6, 0.9], parallax: 0.08 },
+    { share: 0.08, size: [1.4, 2.2], alpha: [0.9, 1], parallax: 0.16 },
   ];
-  const COLORS = ["236, 237, 216", "226, 226, 182", "110, 172, 218", "255, 255, 255"];
+  // cream, lavender, violet-blue and white (colorhunt.co/palette/00105b6061b6c9b5e0fcf9ec)
+  const COLORS = ["252, 249, 236", "201, 181, 224", "170, 172, 236", "255, 255, 255"];
   const rand = (a, b) => a + Math.random() * (b - a);
 
   let w = 0, h = 0, stars = [], shot = null, nextShot = 0, frame = 0;
@@ -26,7 +46,8 @@ const EMAIL = "adibluqman117@gmail.com";
     canvas.width = Math.round(w * dpr);
     canvas.height = Math.round(h * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    const count = Math.min(300, Math.round((w * h) / 4800));
+    // fewer canvas stars now that the CSS layers fill the sky; these are the blinking ones
+    const count = Math.min(110, Math.round((w * h) / 12000));
     stars = [];
     LAYERS.forEach(layer => {
       const n = Math.round(count * layer.share);
@@ -38,8 +59,8 @@ const EMAIL = "adibluqman117@gmail.com";
           a: rand(layer.alpha[0], layer.alpha[1]),
           parallax: layer.parallax,
           color: COLORS[Math.floor(Math.random() * COLORS.length)],
-          // about a quarter of stars twinkle, each on a slow cycle (3 to 10 s)
-          twinkle: Math.random() < 0.25 ? rand(0.0006, 0.002) : 0,
+          // most stars blink, each on its own cycle (about 1 to 4 s)
+          twinkle: Math.random() < 0.85 ? rand(0.0016, 0.006) : 0,
           phase: Math.random() * Math.PI * 2,
         });
       }
@@ -54,7 +75,7 @@ const EMAIL = "adibluqman117@gmail.com";
     const tailX = shot.x - shot.vx * 14, tailY = shot.y - shot.vy * 14;
     const grad = ctx.createLinearGradient(shot.x, shot.y, tailX, tailY);
     grad.addColorStop(0, `rgba(255, 251, 230, ${0.9 * shot.life})`);
-    grad.addColorStop(1, "rgba(110, 172, 218, 0)");
+    grad.addColorStop(1, "rgba(201, 181, 224, 0)");
     ctx.strokeStyle = grad;
     ctx.lineWidth = 1.6;
     ctx.beginPath();
@@ -77,14 +98,18 @@ const EMAIL = "adibluqman117@gmail.com";
       let y = (s.y - scroll * s.parallax) % h;
       if (y < 0) y += h;
       let a = s.a;
-      if (animate && s.twinkle) a *= 0.55 + 0.45 * Math.sin(t * s.twinkle + s.phase);
+      if (animate && s.twinkle) {
+        // sqrt of the sine wave: long bright spells with short dips toward dark
+        const wave = 0.5 + 0.5 * Math.sin(t * s.twinkle + s.phase);
+        a *= 0.12 + 0.88 * Math.sqrt(wave);
+      }
       ctx.fillStyle = `rgba(${s.color}, ${a})`;
       ctx.beginPath();
       ctx.arc(s.x, y, s.r, 0, Math.PI * 2);
       ctx.fill();
-      if (s.r > 1.5) {
+      if (s.r > 1.2) {
         // soft halo on the brightest stars
-        ctx.fillStyle = `rgba(${s.color}, ${a * 0.18})`;
+        ctx.fillStyle = `rgba(${s.color}, ${a * 0.26})`;
         ctx.beginPath();
         ctx.arc(s.x, y, s.r * 3.2, 0, Math.PI * 2);
         ctx.fill();
